@@ -6,7 +6,9 @@ import os
 for v in ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"]: os.environ.setdefault(v, "8")
 import csv, numpy as np
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-import ae_lds_load as L
+import sys; sys.path.insert(0, "/homes/lbastian/latent-dynamics/src"); sys.path.insert(0, "/homes/lbastian/latent-dynamics/scripts")
+from latentdyn.ae import lds_load as L
+L.clf_gen = lambda rid, probe: None  # generator rows not needed here (avoids recomputing from latents)
 A = "/vol/bitbucket/lbastian/latent-dynamics/ae_dynamics/analysis"; OUT = "/vol/bitbucket/lbastian/latent-dynamics/dynamics_report/figures"
 CL, AE, LIN, PIX = "#d62728", "#1f77b4", "#7f7f7f", "#c8c8c8"
 NS = [250, 1000, 4000, 60000]; NL = ["250", "1k", "4k", "full"]
