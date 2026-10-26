@@ -50,7 +50,7 @@ python scripts/ae/ae_lds_report.py                             # AE reports (ae_
 ## Results
 
 - `results/SUMMARY.md`: experiment blocks, key findings with sources, where outputs live.
-- `results/runs.csv` (in progress): per-run hyperparameters, final metrics and reproduce commands.
+- `results/runs.csv`: per-run (1233 runs) hyperparameters, final metrics and reproduce commands; `results/sweeps.csv` groups runs by experiment block with launchers. Regenerate with `python scripts/build_results_index.py`.
 
 ## Tests
 

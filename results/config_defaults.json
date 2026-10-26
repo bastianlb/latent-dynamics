@@ -1,0 +1,12 @@
+{
+ "constants": {
+  "log_every": 50,
+  "n_probe": 1000,
+  "probe_balanced": true,
+  "recon_weight": 1.0
+ },
+ "ignored_in_verification": [
+  "device"
+ ],
+ "note": "config keys constant across ALL runs in runs.csv; run_id/artifacts_root excluded"
+}
