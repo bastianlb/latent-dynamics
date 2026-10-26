@@ -6,9 +6,11 @@ import os, json
 import numpy as np
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 from latentdyn.ae import lds_load as L
 L.clf_gen = lambda rid, probe: None
 BV = "/vol/bitbucket/lbastian/latent-dynamics"; CACHE = f"{BV}/analysis_v2/cache"; TOPO = f"{BV}/ae_dynamics/analysis/topo"; OUT = f"{BV}/dynamics_report/figures"
+plt.rcParams.update({"font.size": 6.5, "axes.labelsize": 6.5, "xtick.labelsize": 6, "ytick.labelsize": 6, "axes.titlesize": 7, "lines.linewidth": 0.9})
 CL, AE, LIN = "#d62728", "#1f77b4", "#7f7f7f"
 DS = ("mnist", "fashion_mnist"); SEEDS = (0, 1, 2); MODELS = ("clf", "mlp", "lin")
 COL = {"clf": CL, "mlp": AE, "lin": LIN}; NAME = {"clf": "classifier", "mlp": "MLP AE", "lin": "linear AE"}
@@ -24,7 +26,7 @@ def load_topo(m, ds, s, N, probe="test"):
     f = f"{CACHE}/{run_id(m, ds, s, N)}.npz" if m == "clf" else f"{TOPO}/{run_id(m, ds, s, N)}.npz"
     if not os.path.isfile(f): return None
     z = dict(np.load(f)); r = {"step": z["step"], "epoch": z["run/epoch"], "mask": z["topo_mask"]}
-    for k in ("train_acc", "test_acc", "recon_train", "recon_test"):
+    for k in ("train_acc", "test_acc", "train_loss", "test_loss", "recon_train", "recon_test"):
         if "run/" + k in z: r[k] = z["run/" + k]
     for k, _ in METRICS: r[k] = z[f"test/{k}"]
     ft = f.replace(".npz", "__train.npz") if m != "clf" else f
@@ -89,9 +91,9 @@ def series(T, R1, N, ds, m, key):
         if any(i is None for i in items): return None
         st = items[0][0]; assert all(np.array_equal(i[0], st) for i in items)
         ratio = [r["epoch"][-1] / r["step"][-1] for r in runs]; ep = st * np.mean(ratio)
-        mu, sd = agg([i[1] for i in items]); return ep, mu, sd
+        mu, sd = agg([i[1] for i in items]); return ep[:-1], mu[:-1], sd[:-1]  # last snapshot (step 20000) excluded
     if any(r is None or key not in r for r in runs): return None
-    mu, sd = agg([r[key] for r in runs]); return np.mean([r["epoch"] for r in runs], 0), mu, sd
+    mu, sd = agg([r[key] for r in runs]); return np.mean([r["epoch"] for r in runs], 0)[:-1], mu[:-1], sd[:-1]
 
 
 def style(ax, ylabel_only=False):
@@ -117,21 +119,64 @@ def vlines(ax, M, N, lw=0.6):
         if x is not None and np.isfinite(x): ax.axvline(x, color=c, ls=":", lw=lw, alpha=0.9, zorder=0)
 
 
+BANDS = (("early fit", "#fff2a8"), ("fitting", "#b9e6c0"), ("overfitting", "#d9ccf0"))
+
+
+def decorate(ax, t, ri, spans, tfs=8):
+    ax.set_title(t, fontsize=tfs, pad=9 if ri == 0 else 3); ax.set_xlim(0.125, 2400)
+    ax.tick_params(labelsize=7)
+    ax.xaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10, numticks=6)); ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+    if ri == 1: ax.set_xlabel("epoch", fontsize=7, labelpad=1)
+    else:
+        tr = matplotlib.transforms.blended_transform_factory(ax.transData, ax.transAxes)
+        for (lo, hi), (nm, _) in zip(spans, BANDS): ax.text(np.sqrt(lo * hi), 1.01, nm, transform=tr, ha="center", va="bottom", fontsize=6.5, color="0.25")
+
+
+def lighten(c, f=0.55):
+    return tuple(1 - (1 - v) * (1 - f) for v in matplotlib.colors.to_rgb(c))
+
+
+def curve_panels(axs, T, N, spans):
+    """right column: train (light) and test (full colour) curves, mean of 3 seeds, log-log, no sd bands."""
+    specs = ((0, "classifier: train and test loss", ("clf",), "train_loss", "test_loss", "cross-entropy"),
+             (1, "autoencoders: train and test reconstruction", ("mlp", "lin"), "recon_train", "recon_test", "reconstruction MSE"))
+    for ri, title, ms, ktr, kte, yl in specs:
+        ax = axs[ri, 2]; style(ax); ax.set_yscale("log")
+        for (lo, hi), (_, c) in zip(spans, BANDS): ax.axvspan(lo, hi, color=c, alpha=0.35, lw=0, zorder=0)
+        for ds in DS:
+            for m in ms:
+                for k, col in ((ktr, lighten(COL[m])), (kte, COL[m])):
+                    ep, mu, _ = series(T, None, N, ds, m, k); ok = np.isfinite(mu) & (mu > 0) & (ep > 0)
+                    ax.plot(ep[ok], mu[ok], color=col, ls=LS[ds], lw=0.9, zorder=2 if k == kte else 1)
+        ax.axvline(12.5, color="0.25", ls=":", lw=0.8, zorder=1)
+        decorate(ax, title, ri, spans, tfs=7)
+    print("--- caption numbers (N=1000, mean of 3 seeds) ---")
+    for ds in DS:
+        ep, mu, _ = series(T, None, N, ds, "clf", "test_loss"); _, tr, _ = series(T, None, N, ds, "clf", "train_loss")
+        print(f"clf {ds}: test-loss min at epoch {ep[np.nanargmin(mu)]:.1f}; end test/train = {mu[-1]/tr[-1]:.3g} (test {mu[-1]:.3g}, train {tr[-1]:.3g}, epoch {ep[-1]:.0f})")
+        ep, mu, _ = series(T, None, N, ds, "mlp", "recon_test"); _, tr, _ = series(T, None, N, ds, "mlp", "recon_train")
+        print(f"mlp {ds}: test-recon min at epoch {ep[np.nanargmin(mu)]:.1f}; end test/train = {mu[-1]/tr[-1]:.3g} (test {mu[-1]:.3g}, train {tr[-1]:.3g}, epoch {ep[-1]:.0f})")
+
+
 def one_page(T, R1, M):
-    fig, axs = plt.subplots(1, 4, figsize=(7.2, 1.75))
-    keys = [("R1", "affine share R1")] + [(k, t) for k, t in (("h1_entropy", "H1 entropy"), ("h1_total", "H1 lifetime sum"), ("pmag_fixed", "PMag"))]
-    N = "1000"
-    for ax, (k, t) in zip(axs, keys):
-        style(ax); draw(ax, T, R1, N, k, M); vlines(ax, M, N); ax.set_title(t, fontsize=7, pad=8 if k == "R1" else 2); ax.set_xlim(0.125, 2560); ax.set_xlabel("epoch", fontsize=7, labelpad=1)
-        ax.xaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10, numticks=6)); ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
-    # regime labels, panel (a)
-    a = axs[0]; gap = float(np.nanmean([M[(N, d)]["mlp_gap"] for d in DS]))
-    tr = matplotlib.transforms.blended_transform_factory(a.transData, a.transAxes)
-    for x, t in ((np.sqrt(0.125 * 1), "early fit"), (np.sqrt(1 * gap), "fitting"), (np.sqrt(gap * 2560), "overfitting")):
-        a.text(x, 1.02, t, transform=tr, ha="center", va="bottom", fontsize=5.5, color="0.25")
-    h = [Line2D([], [], color=COL[m], lw=1) for m in MODELS] + [Line2D([], [], color="0.3", ls=LS[d], lw=1) for d in DS]
-    axs[int(os.environ.get("LEG_PANEL", 3))].legend(h, [NAME[m] for m in MODELS] + ["MNIST", "FM"], fontsize=5.5, frameon=False, loc=os.environ.get("LEG_LOC", "best"), handlelength=1.6, labelspacing=0.2, borderpad=0.1)
-    fig.tight_layout(pad=0.3, w_pad=0.6)
+    fig, axs = plt.subplots(2, 3, figsize=(7.2, 3.5), gridspec_kw={"width_ratios": [1, 1, 1.4]})
+    keys = [("R1", "affine share R1"), ("h1_entropy", "H1 persistence entropy"), ("h1_total", "H1 lifetime sum"), ("pmag_fixed", "PMag")]
+    N = "1000"; G = float(np.nanmean([M[(N, d)]["mlp_gap"] for d in DS])); print(f"G (MLP AE gap onset, mean MNIST/FM, N=1000) = {G!r} epochs")
+    spans = ((0.125, 1.0), (1.0, G), (G, 2400.0))
+    pos = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    for i, ((ri, ci), (k, t)) in enumerate(zip(pos, keys)):
+        ax = axs[ri, ci]; style(ax)
+        for (lo, hi), (_, c) in zip(spans, BANDS): ax.axvspan(lo, hi, color=c, alpha=0.35, lw=0, zorder=0)
+        draw(ax, T, R1, N, k, M)
+        ax.axvline(12.5, color="0.25", ls=":", lw=0.8, zorder=1)
+        decorate(ax, t, ri, spans)
+    curve_panels(axs, T, N, spans)
+    g = int(round(G))
+    h = [Patch(facecolor=c, alpha=0.35, lw=0) for _, c in BANDS] + [Line2D([], [], color=COL[m], lw=1) for m in MODELS] + [Line2D([], [], color="0.3", ls=LS[d], lw=1) for d in DS] + [Line2D([], [], color="0.25", ls=":", lw=0.8), Line2D([], [], color="0.25", lw=1), Line2D([], [], color=lighten("0.25"), lw=1)]
+    lab = ["early fit, <1 epoch", f"fitting, 1 to {g} epochs", f"overfitting, >{g} epochs (AE gap opens, classifier saturates near 30)"] + [NAME[m] for m in MODELS] + ["MNIST", "FM"] + ["step 100 (affine share starts to fall)", "test", "train"]
+    print("legend:", lab)
+    fig.subplots_adjust(left=0.065, right=0.995, bottom=0.26, top=0.89, wspace=0.28, hspace=0.42)
+    fig.legend(h, lab, loc="lower center", ncol=3, fontsize=7, frameon=False, handlelength=1.8, columnspacing=1.5, labelspacing=0.3)
     os.makedirs(OUT, exist_ok=True); fig.savefig(f"{OUT}/onepage_regimes.pdf"); fig.savefig(f"{OUT}/onepage_regimes.png", dpi=300); plt.close(fig)
 
 
