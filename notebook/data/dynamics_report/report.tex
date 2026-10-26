@@ -1,0 +1,266 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[authoryear,round]{natbib}
+\usepackage{placeins}
+\usepackage{array}
+\usepackage{graphicx,amsmath,amssymb,booktabs,enumitem,microtype,hyperref,xcolor}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\setlist{nosep,leftmargin=*}
+\graphicspath{{figures/}}
+\emergencystretch=2em
+\newcommand{\figw}{\linewidth}
+\title{Latent Dynamics of Small Networks: Empirical Findings}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\noindent We study generalization in neural networks through the latent space, with the aim of tying it to theory. We treat training as a dynamical system on the latent point cloud and test whether training and test points move differently, and whether that dynamics shows phase transitions as data size, regularization, label noise or optimizer noise change. A label-free autoencoder trained on the same data serves as a control; Section~\ref{sec:cmp} compares the two latent fields.
+
+\section{Setup}
+We train an MLP encoder with a 16-d latent and a linear probe (218,618 parameters) on MNIST. About 800 runs vary the training-set size $N$ (250--60k), weight decay (0--$3\times10^{-2}$), label noise (0.2/0.4), Adam $\epsilon$ ($10^{-8}$--$10^{-3}$), and SGD learning rate and batch size. A fixed probe set of 1,000 test and 1,000 train points is recorded on a 120-snapshot log schedule; 6 runs are recorded at every step, with optimizer checkpoints.
+
+\section{Earlier explorations}
+\begin{itemize}
+\item \textbf{Geometry and topology (v1).} The latent space inflates and reorganizes mostly in the first epoch. Geometry adds no held-out predictive power for test accuracy beyond early learning curves (a pre-registered, calibrated null that replicated on a confirmatory set).
+\item \textbf{Phase grid} over $N\times$ weight decay: everything is smooth, with no delayed generalization.
+\item \textbf{Label noise.} The memorization crossover scales with $N$ ($\sim$20--40 epochs); test accuracy peaks at $\sim0.3\times$ the crossover.
+\item \textbf{Class pairs} separate in stages (4/9 and 3/5/8 late).
+\item \textbf{Adam loss spikes} come in two types. Without weight decay: 1--2 large spikes (peak loss 8--19), after Adam's second moment falls below $\epsilon$. With weight decay $>0$: 4--8 near-regular spikes per 40k steps (peak 0.6--3), with no $\epsilon$ involvement. Linear stability (lr $\times$ preconditioned top curvature) does not predict them (AUC 0.59). SGD never spikes.
+\item \textbf{Per-step logging} showed that snapshots catch only 27\% of spikes.
+\item \textbf{SGD.} Larger learning rates give better-separated classes. About 70--75\% of that comes from the gradient-noise scale lr/$B$ and the rest from step size; it holds at matched accuracy.
+\end{itemize}
+
+\section{Latent motion is linear, one map per class}
+We decompose held-out per-sample displacements between steps (Figs.~\ref{fig:partition},~\ref{fig:lag}). One shared linear map of the whole cloud explains 80--97\% of motion; per-class linear maps add 15--28\% of the remainder; a nonlinear field adds $\approx0$. Of the remainder, 70--90\% is not predictable from position, at every lag from 1 to 1,000 steps. The same holds in the probe's logit frame, which is unaffected by linear changes of latent coordinates.
+
+\paragraph{Limitation.} The affine share $R_1$ does not separate nonlinear warping of the latent from new input directions entering it. For a linear encoder, $z'=W_e'x$ is an affine function of $z=W_ex$ only if $\mathrm{row}(W_e')\subseteq\mathrm{row}(W_e)$, so $1-R_1$ also counts new input directions (for example later principal components). The late drop of $R_1$ at full $N$ may therefore partly reflect this and not only nonlinear structure. The decomposition does not distinguish the two; a span-split decomposition is left to future work (Section~\ref{sec:ae} reports the linear AE, whose late $R_1$ is 0.39--0.86 rather than $\approx1$).
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{fig1_partition.pdf}
+\caption{A shared linear map explains most held-out latent motion at every training stage. (a) Fraction of held-out motion explained: 95\% (steps 1--10), 97\% (10--100), 87\% (100--1k), 80\% ($\ge$1k); the nonlinear term adds nothing visible. (b) Of the post-linear residual, per-class linear maps recover only 15--28\%; 72--85\% remains unexplained.}\label{fig:partition}
+\end{figure}
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{fig2_lag.pdf}
+\caption{Once fp16-rounding-limited cells are removed, the unexplained share of the post-linear residual stays at 0.71--0.93 (median 0.78) from lag 1 to 1000 in all six runs, i.e.\ it never averages out. Residual energy grows $\approx\Delta^2$ up to $\sim$10 steps (coherent, momentum-like) and $\approx\Delta^1$ beyond (diffusive). Lines end where rounding dominates.}\label{fig:lag}
+\end{figure}
+
+\section{Why: tangent-kernel coupling}
+A one-step linearization through the tangent kernel predicts the motion essentially exactly ($R^2\ge0.997$ after step 10; Fig.~\ref{fig:kernel}). Same-class samples are coupled 1.3--2.6$\times$ more strongly than different-class samples, which yields the per-class linear structure. Its share stays at 70--90\% at every lag from 1 to 1,000 steps, so it never averages out; it moves coherently for $\sim$10 steps (momentum), then diffuses. It is carried by momentum history and each sample's input, not by position, and being in the current minibatch barely changes a sample's motion. Positions alone are therefore not a closed dynamical system.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{fig3_kernel.pdf}
+\caption{Same-class samples are more strongly coupled through the tangent kernel. (a) The within-/between-class Frobenius ratio is $\sim$1.4--1.5 early and $\sim$1.5--2.0 late, up to $\sim$3.2 for $N=60{,}000$. (b) For Adam, $N=4000$, the cosine-normalised coupling peaks at 0.60 within class versus 0.44 between classes.}\label{fig:kernel}
+\end{figure}
+
+\section{No phase transitions}
+The per-class maps' eigenvalues decay smoothly and never change sign across $N$, weight decay, label noise and SGD noise; eigenvalue-count ``events'' match a shuffled null; at $N\le4000$, late-training per-class structure is within the noise baseline (Fig.~\ref{fig:spectra}). Mislabeled points switch from moving toward their true class to moving toward their wrong label at 2--15 epochs, before memorization ($\sim$22--28 epochs, constant in epochs and so $\propto N$ in steps), and join the wrong-label class's linear map (Fig.~\ref{fig:mislabeled}). Expansion is anisotropic, with shear and rotation dominating, which revises the v1 ``isotropic inflation'' reading. For SGD the leading eigenvalue scales mainly with lr/$B$.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{fig4_spectra.pdf}
+\caption{The leading real eigenvalue of the per-class residual generator stays positive (min $2.9\times10^{-8}$) and decays smoothly from $\sim$0.2 to $<10^{-5}$, with no sign change. For $N\le4000$, late values fall within the shuffled-label null.}\label{fig:spectra}
+\end{figure}
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{fig5_mislabeled.pdf}
+\caption{Mislabelled points' displacement turns toward the given label at 2--15 epochs (circles), before NCM memorisation at $\sim$22--28 epochs (triangles), for every $N$.}\label{fig:mislabeled}
+\end{figure}
+
+\section{Train vs.\ test points}
+Training and test points in the probe set move under the same field, but training points sit in a different geometry (Fig.~\ref{fig:traintest}).
+\begin{itemize}
+\item \textbf{Same field.} Per-class maps fit on training points predict test points' motion as well as maps fit on test points: the transfer loss is $\le0.006$ $R^2$ out of 0.82--0.98, and is noticeable only at $N=250$.
+\item \textbf{Weak kernel asymmetry.} The tangent kernel couples train--train pairs only $\sim$1\% (cosine) more strongly than train--test pairs. This does not grow with training or track the train--test loss gap, which varies $\sim$100-fold. A training point's own gradient carries a few percent, up to about 10\%, of each minibatch push.
+\item \textbf{Different geometry.} Training points collapse more tightly onto their classes, and the gap in the log train/test within-class spread ratio grows as $N$ shrinks (Pearson $r=-0.92$ against $1/N$ over 195 runs; down to about $-1.2$ at $N=250$). A $1/N$ fit describes it within each dataset (MNIST $r=-0.97$, Fashion-MNIST $r=-0.91$, steps $\ge1000$), but a fit to the Fashion-MNIST grid gives $R^2=-0.42$ on 30 held-out random configurations that also vary lr, weight decay and label noise. Mislabelled points stay coupled to test points of their true class (0.44 vs.\ 0.26 for the given class) and do not drag test points of their given class.
+\end{itemize}
+As a hypothesis, a small but consistent own-gradient push, received once per epoch, would accumulate into extra collapse that grows as $N$ shrinks.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{fig7_traintest.pdf}
+\caption{(a) For test points, per-class maps fit on training points explain as much motion as maps fit on test points for $N\ge4000$; differences at $N\le1000$ are $\sim$0.002--0.005 (symlog axis). (b) Training points are more collapsed than test points, and the gap grows as $N$ shrinks ($r=-0.92$ against $1/N$, 195 runs).}\label{fig:traintest}
+\end{figure}
+
+\section{Adam spikes in latent space}
+A spike is a large move of the whole cloud that flattens a few directions; the per-class structure is unchanged. Spikes are optimizer events, not representational transitions (Fig.~\ref{fig:spikes}).
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{fig6_spikes.pdf}
+\caption{(a) Per-step Adam loss ($N=4000$, wd $=10^{-4}$) spikes repeatedly, but the loss seen at the 139 snapshots is smooth and misses most spikes. (b) SGD Fisher separation at $t=240$ rises from 2.5 to 4.4 as the noise scale $\nu=\mathrm{lr}/B$ goes from $4.9\times10^{-5}$ to $7.8\times10^{-4}$, a larger span than the 2.9--3.65 seen when lr varies 16-fold at fixed $\nu$.}\label{fig:spikes}
+\end{figure}
+
+\section{Across datasets}
+Fashion-MNIST reproduces every MNIST result. CIFAR-10 (ResNet-18) keeps the train--test results, but its motion is not class-structured and about a third of it is unexplained (Table~\ref{tab:data}).
+
+\begin{table}[t]\centering\small
+\caption{Headline results across datasets. FM: Fashion-MNIST.}\label{tab:data}
+\begin{tabular}{lccc}\toprule
+ & MNIST & FM & CIFAR-10\\\midrule
+Shared linear map, share of motion & 0.87 & 0.91 & 0.68\\
+Class-wise maps, share of residual & 0.20 & 0.28 & $\sim$0\\
+Class-wise share at single steps & 0.2--0.3 & 0.26--0.43 & $\approx$0\\
+Unexplained share & 0.11 & 0.06 & 0.30\\
+Smooth spectra, no sign changes & yes & yes & yes, within null\\
+Same field for train and test ($R^2$ gap) & 0.004 & 0.003 & 0.001\\
+Train points more collapsed at small $N$ & yes ($r=-0.97$) & yes ($r=-0.91$) & yes (2 sizes)\\
+Mislabelled field flips before memorization & 90\% & 97\% & 100\%\\
+No drag of test points & yes & yes & yes\\
+Kernel linearization $R^2$ & $\ge0.997$ & $\ge0.994$ & 0.97--0.99\\
+Same- vs.\ other-class coupling & 1.3--2.6$\times$ & 1.8--2.8$\times$ & 1.3--1.45$\times$\\
+Mislabelled coupling, true vs.\ given class & 0.44 vs.\ 0.26 & 0.51 vs.\ 0.22 & 0.49 vs.\ 0.38\\\bottomrule
+\end{tabular}
+
+\smallskip\footnotesize CIFAR-10 is measured in a 16-d PCA frame; 32-d PCA and logit frames agree. Per-step runs confirm that CIFAR-10 motion has no class-wise part even at single steps; it appears only over about 1000 steps (0.18--0.42). CIFAR-10 kernel rows use approximate gradients, because augmented batches cannot be replayed exactly. On FM the unexplained share peaks at 0.53--0.66 near a 10-step lag instead of staying flat.
+\end{table}
+
+\section{Autoencoder: a label-free negative control}\label{sec:ae}
+An autoencoder (AE) memorizes its training set, and its latent space records that memorization after the fact, but it neither tracks nor anticipates the generalization gap beyond the training-set size $N$. The classifier's train-point collapse is therefore a label-driven signal, not a generic property of training. Overparameterized AEs are known to memorize training examples \citep{radhakrishnan2018memorization,radhakrishnan2020overparameterized}, and linear networks learn principal directions in stages \citep{saxe2014exact,saxe2019mathematical}; we test both in the setting of this report.
+
+\paragraph{Setup.} MNIST and Fashion-MNIST (FM); MLP AE 784-256-64-16 and a linear AE; Adam, lr $10^{-3}$, batch 128, 20k steps; $N\in\{250,1000,4000,\text{full}\}$, weight decay 0 or $10^{-4}$, 3 seeds (48 runs per dataset). The encoder never sees labels. Gap $=$ test minus train reconstruction MSE; epoch $=$ step$\times128/N$.
+
+\paragraph{Overfitting clock.} The gap opens at 30--50 epochs at every $N$, not at a fixed step count. Test error reaches its minimum at epoch 120--150 and then rises (Fig.~\ref{fig:aegen}, Table~\ref{tab:ae}). Weight decay removes the late rise but leaves the best test error unchanged.
+
+\begin{table}[t]\centering\small
+\caption{AE results across datasets (3 seeds). Triples are $N=250/1000/4000$ unless stated.}\label{tab:ae}
+\resizebox{\linewidth}{!}{\begin{tabular}{lccc}\toprule
+ & MNIST & FM & CIFAR-10\\\midrule
+Final test MSE, $N=250/1000/4000$/full & 0.559/0.375/0.188/0.132 & 0.288/0.194/0.119/0.094 & 0.585/0.413/0.234/0.122\\
+Gap onset (rel.\ gap $>10\%$), epoch & 41/31/50 & 46/37/42 & $38.7\pm1.2$/$27.7\pm4.0$/$36.1\pm3.2$\\
+Test-minimum epoch & 123/122/227 & 152/155/186 & $96\pm8$/$57\pm3$/$50\pm3$\\
+Rise from minimum to end & $+63\%/+52\%/+4.3\%$ & $+48\%/+34\%/+3.5\%$ & $+76\%/+93\%/+61\%$\\
+Same rise, $N=1000$, wd $10^{-4}$ & $+20\%$ & $+11\%$ & $+40\%$\\
+Best test MSE, $N=1000$, wd 0 vs.\ $10^{-4}$ & 0.247 vs.\ 0.244 & 0.145 vs.\ 0.145 & 0.2135 vs.\ 0.217\\
+Linear AE rel.\ gap, $N=250/1000$ & $+18\%/+2.8\%$ & $+21\%/+3.6\%$ & $+110\%/+22\%$\\
+Linear AE test minimum then rise & none ($<0.03\%$) & none ($<0.05\%$) & none ($+0.7\pm1.3\%$/$+0.6\pm0.7\%$, within noise)\\
+PC staging rank corr.\ linear (MLP) & 0.89--0.93 (0.44--0.64) & 0.98 (0.65--0.79) & 0.96--0.98 (0.78--0.84)\\
+Rise-time slope vs.\ $\lambda$, readout $R^2$ & $-1.9$ to $-2.0$ & $-1.1$ to $-1.2$ & $-0.87$ to $-0.95$ (linear AE)\\
+Error vs.\ class-mean distance, train vs.\ test ($N=1000$) & $+0.03$ vs.\ $+0.70$ & $+0.05$ vs.\ $+0.67$ & $+0.39$ vs.\ $+0.71$\\
+Same, $N=250$ & $-0.24$ vs.\ $+0.54$ & $-0.24$ vs.\ $+0.51$ & $+0.41$ vs.\ $+0.76$\\
+NCM acc., full $N$: AE label/AE cluster/classifier label & 0.82/0.88/0.97 & 0.70/0.86/0.86 & 0.36/0.90/n/a (no matched classifier runs)\\
+Geometry tracks the gap beyond $N$ & no & no & no (within-seed, first difference); $N$-dummy partial $r=-0.56$ unresolved\\\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{ae_generalization.png}
+\caption{MNIST AE generalization. Left: test (solid) and train (dashed) reconstruction error of the MLP AE at four $N$; the gap opens near epoch 40 and test error turns up near epoch 120. Middle: the linear AE has no test minimum. Right: gap vs.\ $N$; the linear AE excess falls roughly as $1/N$ and vanishes at $N=4000$.}\label{fig:aegen}
+\end{figure}
+
+\paragraph{Linear AE.} The linear AE does not overfit in this sense: its excess gap falls as $1/N$ ($N\times$excess $\approx50$ and 44 at $N=250$ and 1000 on MNIST) until the sample-PCA error vanishes, and its test error is monotone. On MNIST the test split is about 1.6\% easier than train for a 16-d subspace, so a gap near $-1.6\%$ means no overfit. The MLP's peak is a nonlinear effect.
+
+\paragraph{Staged PCA learning.} The linear AE learns the principal directions in order of eigenvalue (rank correlation 0.89--0.93 on MNIST, 0.98 on FM); the MLP is only weakly sequential, except at width 64 and full $N$ (0.92 on MNIST). A controlled run on a 10k MNIST subset (SGD and Adam, default and small init, 3 seeds) measures the mode strength $s_k=v_k^\top W_dW_ev_k$ and finds a rise time $\propto\lambda^{-1.1}$ to $\lambda^{-1.4}$ in every condition, including Adam at default init ($-1.17\pm0.01$), close to the $\lambda^{-1}$ of linear-network theory (Fig.~\ref{fig:aelin}). The earlier steeper law (about $-2$) was a readout artefact: the affine-readout $R^2$ is scale-free and rises when the encoder direction aligns with PC $k$, so its rise times measure alignment, not strength, and depend on init scale (slopes $-1.6$ to $-4.6$). The FM $R^2$ slope ($-1.1$ to $-1.2$) is therefore not comparable to the MNIST $R^2$ slope.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{ae_linear_theory.png}
+\caption{Linear AE staging on MNIST (seed 0). Top: mode strength $s_k$ of the 16 leading PCs (dark to light: high to low eigenvalue) rises in order. Bottom: rise step vs.\ $\lambda_k$; strength (blue) follows slope $-1$, the affine-readout $R^2$ (red) is steeper and init-dependent.}\label{fig:aelin}
+\end{figure}
+
+\paragraph{Memorization in latent space.} Memorized points are not geometrically special on average: median per-step displacement and path-length ratios of train to test points are $1.00\pm0.02$ in every configuration. The one clean signature is a decoupling: once a train point is memorized, its reconstruction error no longer depends on where it sits relative to its class (Spearman $-0.24$ to $+0.05$ at small $N$), while test errors still do ($+0.5$ to $+0.7$); it replicates on both datasets to within 0.04. At $N=4000$ the fraction of train probe points memorized exceeds the fraction of test points below the same error threshold by about 15 points on both datasets. A control asks whether the decoupling is specific to memorization: the same train-minus-test Spearman gap for a linear AE and for PCA fitted on the $N$ training images, neither of which can memorize, is within 0.03 on MNIST and FM, against $-0.6$ to $-0.78$ for the MLP AE at $N=250$ and 1000 and none at $N=4000$. On CIFAR-10 the memorization-specific part is about $-0.33$ at $N=1000$ and 4000, while at $N=250$ the baselines reproduce the whole gap; over training the gap opens once the train/test error ratio falls below about 0.5, and the linear AE never opens one. Following the difficulty calibration of \citet{shafran2021membership}, subtracting a linear-AE or PCA reference error raises the membership AUC by 0.03 to 0.12 at $N\ge1000$ on MNIST and FM, the baselines alone sit near chance there, and the conclusions are unchanged.
+
+Three earlier AE signals do not survive controls. (i)~Train latents looking more spread than test (spread ratio 1.2 at $N=250$) is a train-fitted-subspace effect: PCA fitted on the $N$ training images, with no network, gives 1.17, and the linear AE reproduces it. The MLP exceeds that reference by $+0.03$ to $+0.05$ on MNIST and $+0.17$ to $+0.21$ on FM at $N\le1000$, but the excess does not scale with memorization depth. (ii)~The gap-tracking correlation of the test-to-nearest-train distance ratio (partial $r=-0.96$ and $-0.87$) is a leverage artefact of $N=250$ under a linear $\log N$ adjustment; with $N$ dummies it is $-0.29$ (FM) and $-0.07$ (MNIST), and first differences over time correlate at about 0. (iii)~A train-minus-test affine-residual share of latent velocity appeared to lead the gap by a factor 2--3, but at full $N$, which never overfits, it matches the $N=1000$ value in the claimed window (0.004 vs.\ 0.005; noise floor 0.01 per snapshot); it scales with the gap only after the gap opens.
+
+\paragraph{Beyond $N$, geometry adds nothing.} With $N$ removed (restricting to $N\le4000$, or using $N$ dummies), no latent summary has a stable partial correlation with the gap across the 24 MLP runs per dataset, and signs flip between datasets. In dense per-step runs (every 2 steps, $N=250$ and 1000) the decoder-tied signature lags the gap onset by 20--60 epochs and no latent-only signature shows a sharp onset (hinge $R^2$ 0.4--0.8). For the AE, geometry follows memorization; it does not anticipate it.
+
+\paragraph{Class structure.} The AE keeps input-cluster structure and builds label structure only weakly; the classifier erases the former and builds the latter (Fig.~\ref{fig:aeclass}). At full $N$, nearest-class-mean (NCM) accuracy on test latents is 0.88 (input clusters) vs.\ 0.82 (labels) for the AE and 0.62 vs.\ 0.97 for the classifier on MNIST; on FM, 0.86 vs.\ 0.70 and 0.63 vs.\ 0.86. AE label kNN agreement exceeds raw pixels by only $+0.05$ (MNIST) and $+0.03$ (FM). The AE's group-wise vector-field share is no larger for labels than for input clusters (0.18 vs.\ 0.19 on MNIST; 0.29 vs.\ 0.33 on FM), whereas for the classifier labels beat input clusters on MNIST (0.17 vs.\ 0.14) but not on FM (0.18 vs.\ 0.21). (Section~\ref{sec:cmp} collects the comparison.)
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{ae_class_structure.png}
+\caption{Class structure of test latents at full $N$ on MNIST: NCM accuracy (left) and kNN agreement (middle) for label groups (solid) and input-cluster groups (dashed), AE (blue) vs.\ classifier (red); right, group-wise share of the global-affine residual.}\label{fig:aeclass}
+\end{figure}
+
+\paragraph{Mechanism: NTK analysis.} We decompose the one-step change in loss of 200 train and 200 test probe points (MLP AE, $N=250/1000/\text{full}$, plus the linear AE; 3 seeds) into the Adam-preconditioned loss-gradient kernel, split by encoder and decoder, and into momentum-history, new-batch and weight-decay terms (\texttt{ae\_dynamics/ntk/}). The decoder carries the memorization: its share of the train points' own-gradient norm rises with overfitting (0.85 at epoch 10 to 0.94 at epoch 250, $N=250$) and falls at full $N$ (0.80 to 0.73). Scaling the decoder learning rate by 0.1 delays the test minimum from epoch 120 to $469\pm38$ ($N=250$) and $561\pm44$ ($N=1000$); the same scaling of the encoder moves it only to $195\pm14$ and $204\pm17$. Two natural explanations do not discriminate: own-gradient dominance is equally strong in the linear AE, which does not overfit, and the function-space kernel keeps its input-cluster locality in every configuration, including full $N$. What does separate the configurations is a train/test coupling asymmetry in the loss-gradient kernel (train-batch pull relative to a point's own gradient, train over test; Fig.~\ref{fig:aentk}). It is 1.0 at the start in every configuration; at epoch 1000 it is $40\pm8$ at $N=250$, $6.5\pm1.4$ at $N=1000$, $1.1\pm0.1$ at full $N$ and about 0.9 for the linear AE, and across 159 run-epoch points its logarithm correlates with the decoupling above at Spearman $+0.79$. This is correlational: we did not intervene on the asymmetry, and we did not find an explanation of the late test rise, which is a small net of large cancelling terms (momentum history hurts, the new batch helps, a second-order remainder hurts). The layer-timing account of \citet{heckel2020early} is consistent with the timing result, since slowing either block moves the test minimum, but it does not remove the rise at $N=250$ (base $+63\pm4\%$, decoder-slow $+84\pm6\%$, encoder-slow $+78\pm1\%$). Weight decay lowers the asymmetry modestly (6.5 to 3.8 at $N=1000$) without changing kernel rank or locality. The kernel study addresses the gap and the decoupling; it does not address the staged learning of principal directions.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{ae_ntk_asymmetry.png}
+\caption{Tangent-kernel audit of the MNIST MLP AE (mean $\pm$ sd over 3 seeds; linear AE in grey). Top left: train/test coupling asymmetry; top middle: decoupling $\rho_\text{test}-\rho_\text{train}$ (both rise together after epoch $\sim$100 except at full $N$ and for the linear AE); remaining panels: momentum-history, new-batch and second-order terms of the test loss change per step, whose net (bottom right) is small.}\label{fig:aentk}
+\end{figure}
+
+\paragraph{Linear dynamics of the latents.} We ran the classifier's velocity-field decomposition on the AE grid (MLP AE, $d=16$, the same 120 snapshots; test probe, weight decay 0, 3 seeds). $R_1$ is the held-out share of the latent displacement explained by one global affine map $z_t\to z_{t+1}$. Early (steps 10--100) $R_1$ is about 0.97 in both the classifier and the AE (Table~\ref{tab:lds}, Fig.~\ref{fig:lds}). Late (steps $\ge1$k) the classifier stays at 0.98 for $N=1000$ and drops to 0.58 (MNIST) and 0.60 (FM) at full $N$. The AE drops at every $N\ge1000$: 0.81 at $N=1000$ and 0.75 (MNIST) / 0.76 (FM) at full $N$, less than the classifier at full $N$. At $N=250$ the AE stays at 0.94. $R_1$ rises with latent dimension (MNIST, full $N$: 0.51/0.75/0.91 for $d=8/16/64$). The linear AE is not exactly affine either: its late $R_1$ is 0.39--0.86, not $\approx1$ (see the limitations below). (Section~\ref{sec:cmp} collects the comparison.)
+
+\begin{table}[t]\centering\small
+\caption{Held-out global-affine share $R_1$ of the latent displacement (test probe, wd 0, $d=16$, mean of 3 seeds; bands are interval-end steps). Cells are classifier / MLP AE; the last column is the linear AE.}\label{tab:lds}
+\begin{tabular}{llcccc}\toprule
+Data & $N$ & 10--100 & 100--1k & $\ge$1k & $\ge$1k, linear AE\\\midrule
+MNIST & 250 & 0.975 / 0.967 & 0.972 / 0.967 & 0.976 / 0.940 & 0.745\\
+MNIST & 1k & 0.977 / 0.969 & 0.972 / 0.922 & 0.980 / 0.808 & 0.663\\
+MNIST & full & 0.975 / 0.969 & 0.860 / 0.871 & 0.577 / 0.746 & 0.386\\
+FM & 250 & 0.984 / 0.968 & 0.981 / 0.961 & 0.980 / 0.935 & 0.834\\
+FM & 1k & 0.985 / 0.971 & 0.948 / 0.884 & 0.984 / 0.809 & 0.828\\
+FM & full & 0.985 / 0.969 & 0.893 / 0.839 & 0.601 / 0.756 & 0.805\\\bottomrule
+\end{tabular}
+\end{table}
+
+Class-wise affine maps add 0.02--0.07 late and a kNN term adds 0.003--0.016. Groups from $k$-means(10) on input pixels add as much as or more than label groups (labels minus $k$-means: $-0.002\pm0.0005$ on MNIST, $-0.007\pm0.001$ on FM), so we did not find label-specific structure in the AE increment. The per-step generator is expansion-dominated early (10--15 of 16 directions expanding) and has about 7 of 16 expanding directions at full $N$ late in both models (AE 7.3 MNIST, 7.2 FM; classifier 6.6, 6.7), with symmetric and antisymmetric shares of about 0.5 each. Train probes are slightly less affine than test probes (late $R_1$ $-0.012$ on MNIST, $-0.017$ on FM). Within $(N,\text{wd})$ groups, no velocity-field quantity is significantly related to the final reconstruction gap ($|\rho|\le0.2$, $p>0.3$ for $R_1$ and $1-R_3$). Two nominal FM hits (trace share $\rho=-0.55$, antisymmetric share $\rho=+0.44$, among about 48 tests) do not replicate on MNIST, and we treat them as not established. We did not find a velocity-field quantity that tracks generalization beyond $N$.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\figw]{lds_fig1_R1_time.png}
+\caption{$R_1$ (solid) and $R_2$ with label-wise maps (dashed) versus training step for the classifier, the MLP AE and the linear AE; columns are $N=250,1\text{k},4\text{k},\text{full}$, rows are MNIST and FM. Early the classifier and the MLP AE coincide near 0.97; late the classifier falls only at full $N$, the AE at every $N\ge1000$.}\label{fig:lds}
+\end{figure}
+
+\paragraph{Limitations of this comparison.} (i)~$R_1$ does not separate nonlinear warping of the latent from new input directions entering it. For a linear encoder, $z'=W_e'x$ is an affine function of $z=W_ex$ only if $\mathrm{row}(W_e')\subseteq\mathrm{row}(W_e)$, so $1-R_1$ also counts new input directions (for example later principal components), and the linear AE's late $R_1$ of 0.39--0.86 is expected. The classifier's late drop at full $N$ may partly reflect this. A split of $1-R_1$ into span and non-span parts is left to future work. (ii)~We did not compute a gauge null, so rotation shares are not interpreted. (iii)~The AE runs use a light partition mode, so $R_3-R_2$ is a lower bound and ``unexplained'' an upper bound. (iv)~``Late'' is a different regime in the two setups: the AE reconstruction is still improving after step 1k, while the classifier is at its terminal phase. Mechanisms for these trends were not tested.
+
+\paragraph{CIFAR-10 replication.} We repeat the AE study on CIFAR-10 with a convolutional AE (latent 64, the column of Table~\ref{tab:ae}), a linear AE (64) and a convolutional AE (16): 42 runs, 3 seeds, $N=250/1000/4000/\text{full}$, weight decay 0 or $10^{-4}$ for the latent-64 AE. The overfitting clock and the gap replicate in kind. The gap shrinks with $N$ and with weight decay while the best test error is unchanged ($N=1000$: 0.2135 vs.\ 0.217), and the gap opens at 27.7 to 38.7 epochs. The test minimum comes earlier than on MNIST and moves earlier with $N$ ($96\pm8/57\pm3/50\pm3$ epochs, against about 120/120/227), and the late rise is larger ($+76/+93/+61\%$) and only about halved by weight decay ($+24/+40/+26\%$). The linear AE does not overfit beyond the sample-subspace effect (relative gap $+110/+22.1/+4.6/+0.4\%$ from $N=250$ to full, rise within noise). Principal-direction order replicates (Spearman 0.96 to 0.98 linear, 0.78 to 0.84 convolutional); the linear rise-time slope is $-0.87\pm0.13$, so the MNIST value near $-2$ is not general. The decoupling replicates in direction (train $+0.39\pm0.01$ vs.\ test $+0.71\pm0.01$ at $N=1000$), but the train correlation never reaches zero, and the control in the memorization paragraph attributes only about $-0.33$ of the train-test gap to memorization at $N=1000$ and 4000, and none at $N=250$. Latent geometry does not track the gap in within-seed or first-difference tests; an $N$-dummy partial correlation of the nearest-neighbour ratio with the gap ($-0.56$) remains unresolved, is not driven by $N=250$, and may reflect the weight-decay contrast. Label structure in the AE latents is barely above pixels (label kNN agreement 0.188 vs.\ 0.189), and the $k$-means groups on CIFAR-10 are colour and luminance clusters. There are no matched CIFAR-10 classifier runs, so the classifier contrasts are untested, and the convolutional latent-64 AE is not like-for-like with the MLP latent-16 AE (the convolutional latent-16 AE has a relative gap of $828\pm42\%$ at $N=1000$).
+
+\paragraph{Related work.} \citet{rahimi2025unveiling} report model-wise, epoch-wise and sample-wise multiple descents in nonlinear AEs trained on noisy data and prove that linear AEs have none; our clean-data MLP AE shows a test minimum followed by a rise and the linear AE shows none, with weight decay removing the rise. \citet{radhakrishnan2018memorization,radhakrishnan2020overparameterized} show that overparameterized AEs memorize through contraction and attractors at the training points, which does not describe per-sample error over training. \citet{shafran2021membership} show that reconstruction error as a membership signal is confounded by sample difficulty; the decoupling we measure is consistent with that confound seen in latent coordinates, and we have not compared it with a calibrated error. \citet{agarwala2022geometry} report that AE Jacobian eigenvalues predict test MSE on MNIST; we ask instead whether latent geometry predicts the gap beyond $N$ and whether it leads the gap, and find neither. \citet{balestriero2024learning} argue that reconstruction favors pixel-variance directions, in line with the AE keeping input-cluster over label structure. \citet{saxe2014exact,saxe2019mathematical} and \citet{bao2020regularized} describe stage-wise learning of principal directions; we add a measured separation of mode strength ($\lambda^{-1.1}$ to $\lambda^{-1.4}$) from affine-readout alignment (steeper, init-dependent). We did not find prior work reporting the gap onset as a fixed number of epochs across $N$ or the effect of weight decay on the late rise in AEs.
+
+\section{One field, two organizations: autoencoder vs.\ classifier}\label{sec:cmp}
+\paragraph{Shared field.} The classifier and the MLP AE see the same images and use the same optimizer (Adam $10^{-3}$, batch 128, 20k steps, the same 120 snapshots); only the loss differs. Everything that does not involve labels agrees (Table~\ref{tab:fieldcmp}, upper block). Early per-interval motion is one global affine map in both ($R_1\approx0.97$--$0.98$ at steps 10--100, every $N$, both datasets), and a kNN nonlinear term adds almost nothing in either. The per-step generator is expansion-dominated early (10--15 of 16 directions expanding) and has about 7 of 16 expanding directions late at full $N$ in both, with symmetric and antisymmetric shares near 0.5 each (gauge caveat; we do not interpret them). Train and test points ride the same field (classifier transfer $R^2$ gap $\le0.006$; AE train-minus-test late $R_1$ of only $-0.012$ and $-0.017$). Input-cluster structure appears before label structure in both, and no field quantity tracks the generalization gap beyond $N$ in either.
+
+\paragraph{Where they differ.} The loss decides what organizes the field (Fig.~\ref{fig:fieldcmp}b,c). In the classifier, label groups are written into the field: same-class kernel coupling is 1.3--2.8$\times$ other-class, label-wise maps beat $k$-means maps on MNIST (0.17 vs.\ 0.13) though not on FM (0.18 vs.\ 0.21), mislabelled points' displacement flips toward the given label at 2--15 epochs, and train points collapse within class at small $N$ (spread ratio 0.83, nearest-neighbour ratio 1.17 at $N=250$ on MNIST). Input clusters are erased (input-cluster NCM 0.62 and 0.63 at full $N$). In the AE, input clusters are kept or sharpened (NCM 0.88 on MNIST, 0.86 on FM, 0.90 on CIFAR-10), and label structure appears only where it coincides with them: label kNN agreement exceeds raw pixels by $+0.05$ (MNIST), $+0.03$ (FM) and $+0.00$ (CIFAR-10), and the linear AE equals pixels everywhere. $k$-means groups explain as much or more of the class-wise motion as labels (labels beat $k$-means in 17\% of MNIST runs and 0\% of FM runs; on CIFAR-10 the label-wise share is about 0 and the cluster-wise share 0.02--0.09). Train points are more spread than test points (1.20 at $N=250$ on MNIST, of which a pixel-PCA reference reproduces 1.17), with a nearest-neighbour ratio below 1 (0.87): the opposite sign from the classifier.
+
+\paragraph{Late affinity.} The classifier keeps $R_1$ at 0.98 for $N\le4$k and loses affinity only at full $N$ (0.58 on MNIST, 0.60 on FM). The AE loses it at every $N\ge1$k (0.81 at $N=1$k, 0.75 and 0.76 at full $N$), less than the classifier at full $N$, and stays at 0.94 at $N=250$ (Fig.~\ref{fig:fieldcmp}a). Because $1-R_1$ also counts new input directions entering the latent (the row-span limitation above), the AE's steady loss of affinity is consistent with it continuing to pull in later principal components; the linear AE, which does exactly that, has late $R_1$ of 0.39--0.86. We did not test this.
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\figw]{fig8_field_compare.pdf}
+\caption{Classifier (red), MLP AE (blue) and linear AE (grey), test probe, wd 0, $d=16$. (a) Late global-affine share $R_1$ (steps $\ge$1k) vs.\ $N$, MNIST solid, FM dashed; mean $\pm$ sd over 3 seeds. The classifier loses affinity only at full $N$, the AE at every $N\ge1$k. (b) Late group-wise increment over the global-affine map, $R_2-R_1$ (not divided by $1-R_1$, so smaller than the shares in the table), for label groups (filled) and $k$-means(10) input-cluster groups (open); for the AE, input-cluster maps explain as much as label maps. (c) Final kNN agreement of test latents at full $N$ with labels (solid) and input clusters (hatched); the AE's label structure sits at the pixel level, the classifier's far above it, and the classifier's input-cluster structure falls below pixels. CIFAR-10 has no matched classifier (empty slot) and uses the convolutional AE with $d=64$.}\label{fig:fieldcmp}
+\end{figure}
+
+\paragraph{Memorization signatures.} Both fields carry one, of different kinds. The classifier's is label-tied: mislabelled points flip before NCM memorization, and train points collapse within class. The AE's is decoder-tied: the error of a memorized train point decouples from its latent typicality (Spearman $+0.03$ train vs.\ $+0.70$ test at $N=1$k) and lags the gap. Neither leads the gap, and neither adds to $N$.
+
+\paragraph{Reading.} The shared part is what the data and optimizer impose through the tangent kernel: a near-affine, expansion-dominated early flow, a residual that no fitted form captures, and one field for train and test points. The loss adds the group structure: labels for the classifier, input clusters for the AE, so class appears in the AE only as a by-product of input clustering. Caveats: there is no matched CIFAR-10 classifier for the AE grid (the classifier's CIFAR-10 runs in Table~\ref{tab:data} are a ResNet-18 with $d=512$, not like-for-like); label-wise kernel coupling and Adam spikes were not measured for the AE; ``late'' differs in the two setups (the AE is still improving after step 1k); rotation shares are not gauge-null corrected; and the AE runs use a light partition mode.
+
+
+
+\begin{table}[htbp]\centering\scriptsize
+\caption{Classifier vs.\ AE latent fields (test probe, wd 0, $d=16$; AE is the MLP AE, on CIFAR-10 the convolutional AE with $d=64$; mean of 3 seeds). NCM: nearest class mean; input clusters: $k$-means(10) on pixel PCA; ``class-wise share'' is $(R_2-R_1)/(1-R_1)$ late. The AE kernel row is a different statistic (within-input-cluster cosine excess) from the classifier's Frobenius ratio. The kNN row is late (steps $\ge$1k).}\label{tab:fieldcmp}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.29\linewidth}>{\raggedright\arraybackslash}p{0.21\linewidth}>{\raggedright\arraybackslash}p{0.29\linewidth}>{\raggedright\arraybackslash}p{0.14\linewidth}@{}}\toprule
+Property & Classifier & MLP AE & Measured on\\\midrule
+\multicolumn{4}{l}{\emph{Shared}}\\
+Early global-affine share $R_1$, steps 10--100 & 0.975--0.985 & 0.967--0.971 & MNIST, FM, all $N$\\
+kNN nonlinear term beyond group-wise maps (late) & 0.000--0.006 & 0.003--0.016 & MNIST, FM\\
+Expanding generator directions (of 16), early / late full $N$ & 12--15 / 6.6--6.7 & 10--12 / 7.2--7.3 & MNIST, FM\\
+Same field for train and test points & transfer $R^2$ gap $\le0.006$ & late $R_1$ train $-$ test $=-0.012$ / $-0.017$ & MNIST, FM\\
+Input-cluster structure before label structure & yes & yes & MNIST, FM\\
+Field tracks the gap beyond $N$ & no & no & all\\\midrule
+\multicolumn{4}{l}{\emph{Differs}}\\
+Late $R_1$ (steps $\ge$1k), $N=1$k / full & 0.98 / 0.58 (FM 0.98 / 0.60) & 0.81 / 0.75 (FM 0.81 / 0.76) & MNIST (FM)\\
+Class-wise share, labels vs.\ input clusters, full $N$ & 0.17 vs.\ 0.13 (FM 0.18 vs.\ 0.21) & 0.18 vs.\ 0.19 (FM 0.29 vs.\ 0.33; CIFAR $\sim$0 vs.\ 0.02--0.09) & MNIST, FM, CIFAR (AE)\\
+Label NCM accuracy, full $N$ & 0.97 / 0.86 & 0.82 / 0.70 / 0.36 (CIFAR random init 0.29) & MNIST / FM / CIFAR\\
+Input-cluster NCM accuracy, full $N$ & 0.62 / 0.63 & 0.88 / 0.86 / 0.90 & MNIST / FM / CIFAR\\
+Label kNN gain over raw pixels & $+0.21$ / $+0.17$ & $+0.05$ / $+0.03$ / $+0.00$ (linear AE $+0.00$) & MNIST / FM / CIFAR\\
+Label-structure half-gain epoch, full $N$ & 0.04 / 0.14 & 0.24 / 0.18 & MNIST / FM\\
+Train vs.\ test geometry, $N=250$: spread ratio, NN ratio & 0.83, 1.17 (FM 0.78, 1.11): collapsed & 1.20, 0.87 (FM 1.25, 0.79): spread, repelling & MNIST (FM)\\
+Kernel coupling & same class 1.3--2.8$\times$ other class & input-cluster locality constant (cosine excess 0.18--0.24); label coupling not measured & MNIST, FM\\
+Memorization signature in the field & mislabelled displacement flips to given label at 2--15 epochs & error decouples from latent typicality ($+0.03$ train vs.\ $+0.70$ test, $N=1$k), decoder-tied, lags gap & MNIST, FM (CIFAR partial for AE)\\
+Linear baseline & none & linear AE: late $R_1$ 0.39--0.86, no overfit, PCs learned in order & MNIST, FM, CIFAR\\\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+\section{Measurement cautions}
+\begin{itemize}
+\item Count spikes per step, not from snapshots.
+\item The pseudo-inverse NC1 produced a spurious crossover band; use the trace ratio.
+\item Latent coordinates are defined only up to a linear map, so raw displacements overstate structure.
+\item $R_1$ conflates nonlinear warping with new input directions entering the latent ($\mathrm{row}(W_e')\not\subseteq\mathrm{row}(W_e)$ for a linear encoder), so a late $R_1$ below 1 is not by itself evidence of nonlinearity.
+\end{itemize}
+
+\section{Open questions}
+\begin{itemize}
+\item Can the extra collapse of training points at small $N$ be derived from the kernel dynamics, e.g.\ from each point's own-gradient push accumulated over epochs?
+\item Does that train--test geometry gap predict the generalization gap quantitatively across $N$, weight decay and label noise?
+\item Why does memorising wrong labels stay local? Does image-similarity coupling in the kernel explain when overfitting is benign?
+\item CIFAR-10 keeps the train--test results without class-wise structure. Which latent property then carries generalization there?
+\item The classifier and the autoencoder share the early field and differ in its late group structure. Is the shared part fixed by the input kernel alone, and can the label-free part of the classifier's field be predicted from the autoencoder's?
+\end{itemize}
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{document}

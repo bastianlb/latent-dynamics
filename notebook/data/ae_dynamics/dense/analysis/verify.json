@@ -1,0 +1,98 @@
+{
+ "mnist_ae_mlp_d16_s0_n1000_wd0": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 40,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s1_n1000_wd0": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 40,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s2_n1000_wd0": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 40,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s0_n1000_wd1e-4": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 40,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s1_n1000_wd1e-4": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 40,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s2_n1000_wd1e-4": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 40,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s0_n250_wd0": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 36,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s1_n250_wd0": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 36,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s2_n250_wd0": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 36,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s0_n250_wd1e-4": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 36,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s1_n250_wd1e-4": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 36,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ },
+ "mnist_ae_mlp_d16_s2_n250_wd1e-4": {
+  "n_shared_log_steps": 120,
+  "max_abs_latent_diff": 0.0,
+  "max_abs_recon_diff": 0.0,
+  "n_dense_vs_grid_steps": 36,
+  "dense_vs_grid_latent_maxdiff": 0.0,
+  "dense_vs_grid_recon_maxdiff": 0.0
+ }
+}
