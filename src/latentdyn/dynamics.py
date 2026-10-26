@@ -1,5 +1,5 @@
 """Dynamical-systems analysis of latent-kernel trajectories. CPU only.
-Usage: python dynamics.py --runs 'mnist_probe_none_d16_s0' --workers 4 --out DIR
+Usage: python -m latentdyn.dynamics --runs 'mnist_probe_none_d16_s0' --workers 4 --out DIR
 """
 import os, sys
 _w = 1
@@ -7,15 +7,13 @@ for i, a in enumerate(sys.argv):
     if a == "--workers" and i + 1 < len(sys.argv):
         try: _w = int(sys.argv[i + 1])
         except ValueError: pass
-_t = "8" if _w <= 1 else "2"
-for _k in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
-    os.environ.setdefault(_k, _t)
+from latentdyn._threads import cap_threads
+cap_threads(8 if _w <= 1 else 2)  # setdefault semantics (force=False)
 import argparse, glob, json, re, csv, time, collections
 import numpy as np
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import metrics as M
+from latentdyn import metrics as M
 
 RUNS = "/vol/bitbucket/lbastian/latent-dynamics/runs"
 OUT = "/vol/bitbucket/lbastian/latent-dynamics/dynamics"

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "latentdyn"
+version = "0.1.0"
+description = "Latent-space dynamics of neural networks during training"
+requires-python = ">=3.11"
+dependencies = ["numpy", "torch", "torchvision", "scipy", "scikit-learn", "matplotlib"]
+
+[project.optional-dependencies]
+tda = ["ripser", "persim", "gudhi"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

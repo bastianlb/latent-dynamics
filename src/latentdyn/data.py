@@ -18,8 +18,8 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets, transforms
 
-from config import Config, VALID_DATASETS
-from model import set_default_input_shape
+from latentdyn.config import Config, VALID_DATASETS
+from latentdyn.model import set_default_input_shape
 
 MNIST_MEAN = 0.1307
 MNIST_STD = 0.3081

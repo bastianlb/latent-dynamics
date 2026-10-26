@@ -800,15 +800,14 @@ def _run_self_test():
     print(f"[self-test] fabricating synthetic run at {run_dir}")
     _make_synthetic_run(run_dir, n_classes=10, n_per_class=60, d=16, n_steps=12, seed=0)
 
-    here = os.path.dirname(os.path.abspath(__file__))
     py = sys.executable
 
     print("[self-test] running analyze.py ...")
-    subprocess.run([py, os.path.join(here, "analyze.py"), "--run_dir", run_dir],
+    subprocess.run([py, "-m", "latentdyn.pipeline.analyze", "--run_dir", run_dir],
                     check=True)
 
     print("[self-test] running plot.py ...")
-    subprocess.run([py, os.path.join(here, "plot.py"), "--run_dir", run_dir],
+    subprocess.run([py, "-m", "latentdyn.pipeline.plot", "--run_dir", run_dir],
                     check=True)
 
     ts = np.load(os.path.join(run_dir, "metrics", "timeseries.npz"))
