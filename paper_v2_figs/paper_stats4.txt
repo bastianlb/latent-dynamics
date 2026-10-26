@@ -1,0 +1,73 @@
+[conf primary] ridge G: equivalent Holm 0/10, unadjusted 0/10, positive Holm 0/10, point<0 10/10, 90% CI wholly <0 5/10
+[conf primary] ridge compact4: equivalent Holm 1/10, unadjusted 4/10, positive Holm 0/10, point<0 9/10, 90% CI wholly <0 6/10
+[conf primary] R2(B1) acc 0.7737142774966503 0.8233374620911995 gap 0.6709855138586714 0.7122254574009492
+[conf primary] G delta range -0.12712742866898816 -0.02614655505378307
+[conf primary] c4 delta range -0.08985151675283448 0.019508959786995465
+[conf gbm] equivalent/inconclusive/positive: {'G': {'equivalent': 1, 'inconclusive': 9, 'positive': 0}, 'compact4': {'equivalent': 5, 'inconclusive': 5, 'positive': 0}}
+[conf gbm] G delta range -0.052912253920021 0.04339598170311872
+[conf gbm] G gap1000 0.014402557205591093 -0.06310819816281829 0.11077787295627879
+[conf gbm] compact4 delta range -0.07727978043108673 0.016719306979113377
+[conf gbm] compact4 gap1000 -0.013657731159675028 -0.04443610517253631 0.02610588374128145
+[conf placebo] G - RP18 negative in 10/10 cells (95% CI wholly <0 in 2); G - NZ18 negative in 7/10 (CI wholly <0 in 2)
+[conf placebo] RP18 G-placebo at cutoff 1000 (acc, gap): [-0.07654624837450845, -0.07805045577479239]
+[conf placebo] RP18 dR2 mean range: -0.024338374219083064 0.014901457857243616
+[conf placebo] NZ18 G-placebo at cutoff 1000 (acc, gap): [-0.06352151577755441, -0.072815102132855]
+[conf placebo] NZ18 dR2 mean range: -0.0708280776839659 -0.020809198159137596
+[conf cfg] arch counts: {'mlp': 14, 'cnn': 14}  n range: 271 60000  zero wd: 11  zero noise: 16
+[conf arch] cells (of 10) where pooled R2(B1+G) < R2(B1): mlp 9, cnn 10
+[conf arch] mlp R2(B1+G)-R2(B1) range: -0.24622643385366694 0.07359957705973641
+[conf arch] cnn R2(B1+G)-R2(B1) range: -0.12245790964199577 -0.01613579006958854
+[conf transfer] ridge all G: E 0 P 0 I 10 (I with dR2<0: 6), n=10
+[conf transfer] ridge all compact4: E 3 P 2 I 5 (I with dR2<0: 2), n=10
+[conf transfer] ridge mlp_only G: E 2 P 0 I 8 (I with dR2<0: 5), n=10
+[conf transfer] ridge mlp_only compact4: E 3 P 0 I 7 (I with dR2<0: 6), n=10
+[conf transfer] gbm all G: E 0 P 0 I 10 (I with dR2<0: 7), n=10
+[conf transfer] gbm all compact4: E 3 P 1 I 6 (I with dR2<0: 5), n=10
+[conf transfer] gbm mlp_only G: E 0 P 1 I 9 (I with dR2<0: 6), n=10
+[conf transfer] gbm mlp_only compact4: E 1 P 1 I 8 (I with dR2<0: 4), n=10
+[conf transfer positive] gbm mlp_only G acc_15kw 10: R2(B1) 0.775 dR2 0.056 90% [0.003,0.159]
+[conf transfer positive] gbm mlp_only compact4 acc_15kw 30: R2(B1) -0.329 dR2 0.311 90% [0.116,0.752]
+[conf transfer positive] gbm all compact4 acc_15kw 100: R2(B1) 0.752 dR2 0.046 90% [0.002,0.089]
+[conf transfer positive] ridge all compact4 gap_15kw 10: R2(B1) 0.721 dR2 0.019 90% [0.001,0.050]
+[conf transfer positive] ridge all compact4 gap_15kw 300: R2(B1) 0.609 dR2 0.146 90% [0.026,0.238]
+[regimes] MNIST ridge equivalent cells (of 10): plain m*<=margin 9  Holm 5  refit (class_refit equivalent) 1
+[regimes] Fashion ridge equivalent: plain 0  Holm 0  refit 0
+[controls] mnist loco B0 acc_15kw 10: G 0.710 c4 0.030 RP18 0.416 NZ18 -0.119
+[controls] mnist loco B0 gap_15kw 10: G 0.545 c4 -0.030 RP18 0.272 NZ18 0.063
+[controls] mnist leave_one_n_out B1 acc_15kw 1000: G -0.188 c4 -0.028 RP18 -0.006 NZ18 -0.002
+[controls] mnist leave_one_n_out B1 gap_15kw 300: G -0.222 c4 -0.022 RP18 -0.007 NZ18 -0.021
+[controls] mnist leave_one_wd_out B1 acc_15kw 1000: G -0.106 c4 0.008 RP18 -0.003 NZ18 -0.000
+[controls] mnist leave_one_wd_out B1 gap_15kw 1000: G -0.026 c4 -0.018 RP18 -0.002 NZ18 -0.010
+[controls fashion] loco B0 acc_15kw 10: G 0.364 RP18 0.229 NZ18 -0.078
+[controls fashion] loco B0 gap_15kw 10: G 0.308 RP18 0.218 NZ18 0.030
+[controls fashion] leave_one_n_out B1 acc_15kw 1000: G -0.272 RP18 -0.023 NZ18 -0.011
+[controls fashion] leave_one_n_out B1 gap_15kw 300: G -1.905 RP18 -0.077 NZ18 -0.048
+[compact extrap] ridge leave_one_n_out compact4: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 3
+[compact extrap] ridge leave_one_n_out compact8: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 5
+[compact extrap] ridge leave_one_n_out full G: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 6
+[compact extrap] ridge leave_one_wd_out compact4: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 1
+[compact extrap] ridge leave_one_wd_out compact8: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 4
+[compact extrap] ridge leave_one_wd_out full G: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 3
+[compact extrap] ridge leave_one_optimizer_out compact4: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 2
+[compact extrap] ridge leave_one_optimizer_out compact8: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 3
+[compact extrap] ridge leave_one_optimizer_out full G: cells (of 6, cutoff>=100) with 95% CI wholly < 0: 3
+[within-cfg] mnist acc_15kw 10: gain -0.000 [-0.020,0.019] pts; explained SD 0.00
+[within-cfg] mnist acc_15kw 30: gain 0.029 [-0.006,0.063] pts; explained SD 0.17
+[within-cfg] mnist acc_15kw 100: gain 0.053 [0.018,0.086] pts; explained SD 0.22
+[within-cfg] mnist acc_15kw 300: gain 0.024 [0.004,0.045] pts; explained SD 0.14
+[within-cfg] mnist acc_15kw 1000: gain 0.005 [-0.026,0.043] pts; explained SD 0.07
+[within-cfg] mnist gap_15kw 10: gain -0.000 [-0.019,0.018] pts; explained SD 0.00
+[within-cfg] mnist gap_15kw 30: gain 0.028 [-0.012,0.065] pts; explained SD 0.17
+[within-cfg] mnist gap_15kw 100: gain 0.057 [0.021,0.092] pts; explained SD 0.22
+[within-cfg] mnist gap_15kw 300: gain 0.022 [0.003,0.042] pts; explained SD 0.14
+[within-cfg] mnist gap_15kw 1000: gain -0.002 [-0.031,0.027] pts; explained SD 0.00
+[within-cfg] fashion acc_15kw 10: gain 0.165 [0.085,0.234] pts; explained SD 0.48
+[within-cfg] fashion acc_15kw 30: gain 0.052 [-0.017,0.123] pts; explained SD 0.24
+[within-cfg] fashion acc_15kw 100: gain 0.018 [-0.080,0.093] pts; explained SD 0.15
+[within-cfg] fashion acc_15kw 300: gain 0.007 [-0.041,0.051] pts; explained SD 0.09
+[within-cfg] fashion acc_15kw 1000: gain -0.053 [-0.094,-0.013] pts; explained SD 0.00
+[within-cfg] fashion gap_15kw 10: gain 0.155 [0.073,0.228] pts; explained SD 0.47
+[within-cfg] fashion gap_15kw 30: gain 0.043 [-0.022,0.110] pts; explained SD 0.22
+[within-cfg] fashion gap_15kw 100: gain 0.053 [-0.018,0.113] pts; explained SD 0.27
+[within-cfg] fashion gap_15kw 300: gain -0.001 [-0.044,0.039] pts; explained SD 0.00
+[within-cfg] fashion gap_15kw 1000: gain -0.043 [-0.071,-0.016] pts; explained SD 0.00

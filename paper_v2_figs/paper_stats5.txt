@@ -1,0 +1,15 @@
+[ctrl] Full $G$ (18) mean -0.0734 neg 10 holm 3 None
+[ctrl] Compact-4 (4) mean -0.0312 neg 9 holm 2 None
+[ctrl] Random proj. (18) mean -0.0154 neg 9 holm 5 contrast mean -0.0580 neg 10 holm 2
+[ctrl] iid noise (18) mean -0.0443 neg 10 holm 10 contrast mean -0.0291 neg 7 holm 1
+[ctrl] Curve stats CV18 (18) mean -0.0883 neg 10 holm 3 contrast mean 0.0149 neg 5 holm 1
+[sub] K=28 G {'mean': np.float64(-0.014837047841374318), 'med': np.float64(-0.005686647460581373), 'neg': np.float64(0.5591666666666667), 'p5': np.float64(-0.15748549120832447), 'p95': np.float64(0.11361312510450343)} c4 {'mean': np.float64(-0.0011215698497982827), 'med': np.float64(-0.0021235956095456477), 'neg': np.float64(0.6029166666666667), 'p5': np.float64(-0.06417183185672518), 'p95': np.float64(0.06707471992945188)} NZ18 {'mean': np.float64(-0.012058567260842203), 'med': np.float64(-0.006188527469806093), 'neg': np.float64(0.7822916666666666), 'p5': np.float64(-0.05569240127645557), 'p95': np.float64(0.014161161083197527)} conf percentiles 0.052083333333333336 0.375 0.15875
+[sub] K=14,49,69 G mean: [np.float64(0.031), np.float64(-0.009), np.float64(-0.002)] NZ18: [np.float64(-0.038), np.float64(-0.012), np.float64(-0.008), np.float64(-0.006)]
+[sub] K=28 G 5-95% mean over cells acc [-0.10532518  0.07263878] gap [-0.2096458   0.15458747]
+[arch] (np.float64(-0.06927069631342085), 9) (np.float64(-0.11715480765822506), 7) (np.float64(-0.008862488559600867), 6) (np.float64(-0.007421768559307323), 5) (np.float64(-0.05778296122135731), 7) (np.float64(-0.017210197386902507), 7)
+[lowdim] {'PCA1(G,infold)': np.float64(-0.007), 'PCA1(compact4,infold)': np.float64(0.0), 'PCA2(G,infold)': np.float64(-0.006), 'fisher+eff_rank': np.float64(-0.007), 'te_eff_rank_pr': np.float64(-0.014), 'te_fisher': np.float64(0.007), 'te_h1_top5': np.float64(-0.003), 'te_mag_t1': np.float64(-0.013)} cells lo90>0: 1
+[alpha] wide nested mean G -0.07339455213934085 c4 -0.03118618702336327
+[prec] G hw 0.057809703466819365 0.16034877867646036 acc 0.057809703466819365 0.16034877867646036 gap 0.05943044385084939 0.1196187506008345 c4 cells below margin 5 K needed median 116.60623913261472 range 42.485552712529866 736.6030201059846
+[prec] simulated mean G half-width by K {28: np.float64(0.094), 56: np.float64(0.062), 112: np.float64(0.042), 224: np.float64(0.029), 448: np.float64(0.02)}
+[harm] G acc 300: 0.001, acc 1000: 0.015, gap 300: 0.021 | c4 acc 30: 0.012, acc 300: 0.013
+[harm] unadjusted p<.05 G 5 c4 6 prereg p+ Holm min 1.0

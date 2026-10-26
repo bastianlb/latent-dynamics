@@ -1,0 +1,4 @@
+sl40k_n1000_wd0 norm step989=39.6 final=228.2 peak=377.7 (step 37528) final/step1000=5.76 peak/step1000=9.54
+   fisher max-before-last-event / final: max=2.24 (step 12686) final=1.29
+sgd40k_n1000_wd0 norm step989=22.8 final=29.1 peak=29.1 (step 40000) final/step1000=1.28 peak/step1000=1.28
+   fisher max-before-last-event / final: max=2.89 (step 99) final=2.79
