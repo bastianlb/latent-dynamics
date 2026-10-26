@@ -1,3 +1,5 @@
+System of record for experiments: [notebook/](notebook/README.md), with the live index in [WORKING.md](notebook/WORKING.md).
+
 # latent-dynamics
 
 Study how the **latent representations** of a small neural model (MNIST-scale classifiers and autoencoders) evolve over

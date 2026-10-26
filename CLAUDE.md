@@ -169,3 +169,22 @@ Known layout and rules:
   `conda activate /data2/lbastian/conda/envs/latent-dyn`.
 - Core stack: PyTorch (+CUDA) + torchvision, numpy/scipy/scikit-learn/matplotlib,
   and TDA libs (`ripser`, `persim`, `gudhi`) for persistent-homology metrics.
+
+
+## Laboratory notebook
+
+Before experiment work, read [notebook/README.md](notebook/README.md) and
+[notebook/WORKING.md](notebook/WORKING.md). Follow the agentmemory laboratory
+notebook process, including the existing-project back-fill rules (2026-10-26):
+search prior entries/results/run indexes before repeating work; preserve negative
+results and append dated corrections rather than silently revising numbers.
+
+Every direct coeus launch gets a dated entry and WORKING.md update before or at
+launch: exact command, configs/overrides, dataset/splits/seeds, code revision or
+runtime hashes, owner, GPU index/PID, interpreter, log/output paths and expected
+completion evidence. Record the PID immediately; distinguish pending/startup from
+running, and update both records on progress, completion, failure or blockage. Pin
+code for long runs; do not edit an active run's code. Verify timestamped logs and
+expected artifacts, not just a PID, mtime or exit status. Delegates receive the
+entry path and these rules. Keep bulk artifacts on the approved coeus storage;
+small reports/registries belong in git and point back to absolute source paths.

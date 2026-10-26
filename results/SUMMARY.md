@@ -1,3 +1,5 @@
+System of record for experiments: [notebook/](../notebook/README.md), with the live index in [WORKING.md](../notebook/WORKING.md).
+
 # Results summary
 
 Factual summary of the experiments run so far and what they found. Artifact root is
@@ -290,3 +292,16 @@ Current documents:
 - Classifier topology cache has an outlier last snapshot (step 20000); cause not investigated.
 - Phase-1 v1 claims dropped after review: accuracy-first on all datasets, saturation on all datasets, the 6x PMag
   boost, decoupling from the gap, "fine temporal resolution".
+
+
+## Corrections (2026-10-26)
+
+The original inventory and findings above are retained as historical text. The
+notebook back-fill records later evidence and distinguishes report claims from
+new metadata/table checks.
+
+- **AE NTK count:** 21 checkpoint runs **plus 12** learning-rate controls (33), rather than 21+3; all 33 config paths exist and the registry marks them complete. See [AE NTK](../notebook/2026-10-22_095841_ae-ntk.md). This is not a fresh audit of every final checkpoint.
+- **Train-probe topology exists:** the directory now contains 72 test and 42 train NPZs (partial train coverage), rather than the earlier test-only statement. The newer rebound analysis reuses 72 AE and 30 classifier runs, expanding the original 24-AE regime view. See [topology rebound](../notebook/2026-10-26_184507_ae-topology-rebound.md). The step-20000 classifier outlier remains excluded and unexplained.
+- **Rebound analysis added:** REBOUND_VERDICT/TAKEAWAYS and rebound_numbers.json (22:50–22:54 UTC, newer than this digest) separate optimizer-time rebound from data-pass overfitting. H1 minimum is around steps 7–8, half recovery 56–70; pooled MLP rebound-gap rho=-0.08, and weight decay reduces the gap without removing rebound. This does not support interpreting rebound as overfitting. The e90 late tail is not step-clock invariant; train/test and dataset/N caveats remain. See [the entry and preserved sources](../notebook/2026-10-26_184507_ae-topology-rebound.md); scientific claims were not recomputed from raw arrays.
+- **AE inventory count:** 138 grid runs already includes dimension ablations (48 MNIST, 48 FM, 42 CIFAR); the additional two smoke runs are separate. Avoid adding d8/d64 runs to 138 again. See [grid and controls](../notebook/2026-10-21_153142_ae-grid-memorization.md).
+- **Scope of verified counts:** 926 is the registry count for all v2 training runs, not the number of processed vector-field runs. The preserved core table verifies 105 unique MNIST runs/210 probe rows; replication processed counts remain unaudited. The lrB registry has 48 runs; the digest's +24 matched runs have not been independently identified as a separate run set. See [vector field](../notebook/2026-10-16_160301_vector-field.md) and [lr/batch](../notebook/2026-10-16_101315_v2-lr-batch.md).
