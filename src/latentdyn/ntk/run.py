@@ -1,4 +1,4 @@
-"""Driver: tangent-kernel coupling analysis for one dense_latent run. usage: run_ntk.py <run_id> [--no_kernel]"""
+"""Driver: tangent-kernel coupling analysis for one dense_latent run. usage: python -m latentdyn.ntk.run <run_id> [--no_kernel]"""
 import sys, os, json, glob, time
 import numpy as np, torch, torch.nn.functional as F
 from latentdyn.ntk import lib as L, pair as Pm

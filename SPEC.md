@@ -7,7 +7,7 @@ trajectory.
 
 ## Paths (storage policy — see CLAUDE.md)
 
-- **Code** lives in `/homes/lbastian/latent-dynamics/` (this repo).
+- **Code** lives in `/homes/lbastian/latent-dynamics/` (this repo) as the installable package `latentdyn` (`src/latentdyn/`; see README.md).
 - **All bulky artifacts** live under
   `ARTIFACTS = /vol/bitbucket/lbastian/latent-dynamics/`.
   Never write large/growing files to `/data` or `/homes`.
@@ -95,7 +95,7 @@ Include at least: `dataset`, `latent_dim` (D), `n_probe` (N), `probe_balanced`
 
 One row per snapshot step (sorted by `step`). Columns = `step`, `epoch`,
 `train_loss`, `train_acc`, `test_acc`, plus one column per scalar metric defined
-in `metrics.py`. Array-valued metrics (e.g. per-class-pair distances) go in the
+in `src/latentdyn/metrics.py`. Array-valued metrics (e.g. per-class-pair distances) go in the
 `.npz` under their own keys, indexed consistently with `step`.
 
 ## Conventions
@@ -115,7 +115,7 @@ in `metrics.py`. Array-valued metrics (e.g. per-class-pair distances) go in the
   not AdamW). It is equivalent to minimising `L(theta) + 0.5*wd*||theta||^2` over all parameters except the learnable
   `l2_scale`; the penalty's Hessian is `wd*I`. All diagnostics below use this full loss.
 - `--log_opt_diag` (default off) adds the following keys to every snapshot npz (both `latents/` and `latents_train/`,
-  identical values). Code: `optdiag.py`. The "fixed batch" is `min(1024, |train pool|)` examples drawn once without
+  identical values). Code: `latentdyn/train_aux/optdiag.py`. The "fixed batch" is `min(1024, |train pool|)` examples drawn once without
   replacement from the un-augmented training pool (noisy labels if any) with `np.random.RandomState(seed+5000)`;
   the loss is evaluated in eval mode, fp32. The power-iteration start vector uses a dedicated
   `torch.Generator` (seed+7000). Diagnostics use only `torch.autograd.grad` (no `.grad` is written), only read the optimizer
@@ -141,13 +141,13 @@ Cost: about 0.5 s per snapshot on CPU (2 threads) for the MLP.
 ## Dense optimizer-state logging (`--log_opt_dense`)
 
 Adam only; default off (training bit-identical on/off: reads optimizer state and `p.grad` only, no RNG, no extra
-backward). Code: `optdense.py`, hooked in `train.py` right after `optimizer.step()` (before the next `zero_grad`).
+backward). Code: `latentdyn/train_aux/optdense.py`, hooked in `latentdyn/train.py` right after `optimizer.step()` (before the next `zero_grad`).
 Definitions at step `t` (state step count): `vhat = exp_avg_sq/(1-b2^t)`, `mhat = exp_avg/(1-b1^t)`,
 `g' = p.grad + wd*theta_before` (coupled L2, wd=0 for `l2_scale`), `denom = sqrt(vhat)+eps`, `Dtheta = lr*mhat/denom`,
 `a = lr/denom`, `r = |mhat|/denom`. Scopes: `global`, `fc1` (`encoder.net.1`), `fc2` (`encoder.net.3`),
 `fc3` (`encoder.net.5`), `probe` (`probe.*`). Quantiles = nearest rank on a sorted copy.
 
-Flags (all in `config.py`; every default is off/neutral):
+Flags (all in `latentdyn/config.py`; every default is off/neutral):
 
 | flag | default | meaning |
 |---|---|---|

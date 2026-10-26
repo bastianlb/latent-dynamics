@@ -1,6 +1,6 @@
 """Lead/lag analysis of latent-geometry signatures vs the generalization gap, on the DENSE early-window AE runs.  CPU only, <=8 threads.
 
-Usage: python ae_dense_leadlag.py [--stage compute|report|all] [--threads 8]
+Usage: python -m latentdyn.ae.dense_leadlag [--stage compute|report|all] [--threads 8]
 Input : ae_dynamics/dense/runs/<run>/dense_ae.npz (every 2 steps; latents f32, per-sample recon_err, recon_train/test) + grid runs for verification
 Output: ae_dynamics/dense/analysis/{series/<run>.npz, results.json, verify.json, fig_*.png}
 

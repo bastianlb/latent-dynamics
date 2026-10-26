@@ -1,5 +1,5 @@
 """Empirical-NTK / step-decomposition analysis of MLP (and linear) autoencoders around memorization onset.  Phase 1 (GPU or CPU).
-Usage: CUDA_VISIBLE_DEVICES=1 python ae_ntk.py --runs 'GLOB' [--epochs 10,30,60,120,250,1000] [--nprobe 200] [--K 64]
+Usage: CUDA_VISIBLE_DEVICES=1 python -m latentdyn.ae.ntk --runs 'GLOB' [--epochs 10,30,60,120,250,1000] [--nprobe 200] [--K 64]
 Reads ckpts (model+Adam) written by run_ae_ntk_ckpt.py under ae_dynamics/ntk/runs/<rid>/dense/ckpt at steps s and s+1.
 For each ckpt pair (theta_s, theta_{s+1}) and a probe set of nprobe TRAIN + nprobe TEST points (n=2*nprobe) saves ntk/ana/<rid>/step_*.npz:
  * Per-sample loss L_i = mean_pix (recon_i - x_i)^2 (the training loss), z_i, labels, k-means(10) input clusters, indices.

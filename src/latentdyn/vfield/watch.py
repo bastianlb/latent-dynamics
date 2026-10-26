@@ -1,5 +1,5 @@
 """Poll for idle GPUs (<500 MiB, <=2% util, never GPU 0, at most 3 distinct GPUs) and start vfield workers on them until the work list is done.
-Usage: python scripts/vfield_watch.py [--target vfield|decomp] [--workers_per_gpu 3] [--poll 300] [--runs ...]
+Usage: python -m latentdyn.vfield.watch [--target vfield|decomp] [--workers_per_gpu 3] [--poll 300] [--runs ...]
 (--target decomp replaces the old vfield_decomp_watch.py: launches latentdyn.vfield.decomp with --probes test,train)"""
 import subprocess, time, os, sys, argparse, glob
 from latentdyn import gpu

@@ -1,5 +1,5 @@
 """Phase 2: scalar metrics from ae_ntk.py outputs (CPU, <=4 threads), aggregation over seeds, figures.
-Usage: python ae_ntk_analyze.py [--tag main]   -> ntk/metrics.csv, ntk/summary.json, ntk/figures/*.png"""
+Usage: python scripts/ae/ae_ntk_analyze.py [--tag main]   -> ntk/metrics.csv, ntk/summary.json, ntk/figures/*.png"""
 import os, sys
 from latentdyn._threads import cap_threads
 cap_threads(4)

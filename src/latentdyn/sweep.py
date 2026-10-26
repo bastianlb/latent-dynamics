@@ -1,8 +1,8 @@
-"""Launch a grid of `train.py` runs as co-located subprocesses on whatever
+"""Launch a grid of `latentdyn.train` runs as co-located subprocesses on whatever
 GPU(s) the COORDINATOR has already pinned.
 
     ****************************************************************
-    * run_sweep.py NEVER chooses or sets CUDA_VISIBLE_DEVICES.      *
+    * latentdyn.sweep NEVER chooses or sets CUDA_VISIBLE_DEVICES.      *
     * It is a pure orchestrator: it inherits the environment it is  *
     * launched with (via `env=os.environ.copy()` for every child)  *
     * and never touches the GPU itself (no `import torch`, no      *
@@ -104,7 +104,7 @@ def parse_variant(spec: str) -> Tuple[str, str]:
 
 def derive_run_id(objective: str, latent_norm: str, latent_dim: int, seed: int, tag: Optional[str]) -> str:
     """Single source of truth for run_id: delegates to Config.resolve() so this
-    can never drift from what the child `train.py` process will derive for
+    can never drift from what the child `latentdyn.train` process will derive for
     itself. `device` is set to a harmless placeholder purely so `resolve()`
     skips its `import torch` auto-detect branch -- this process never touches
     torch/CUDA.
@@ -211,7 +211,7 @@ def main() -> None:
     print(
         f"[run_sweep] sweep_name={args.sweep_name!r} n_jobs={len(jobs)} "
         f"max_concurrent={args.max_concurrent} CUDA_VISIBLE_DEVICES={cuda_visible!r} "
-        f"(inherited from the coordinator's environment -- run_sweep.py never sets this itself) "
+        f"(inherited from the coordinator's environment -- latentdyn.sweep never sets this itself) "
         f"manifest={manifest_path}"
     )
 
@@ -346,7 +346,7 @@ def main() -> None:
 def build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         description=(
-            "Launch a grid of train.py runs as co-located subprocesses on whatever GPU(s) "
+            "Launch a grid of latentdyn.train runs as co-located subprocesses on whatever GPU(s) "
             "are already pinned via CUDA_VISIBLE_DEVICES (set by the coordinator -- this "
             "script NEVER sets that variable itself)."
         )

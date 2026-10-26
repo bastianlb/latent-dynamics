@@ -37,4 +37,4 @@ def test_ntk_selftest():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:] or ["adam 0.0"])

@@ -1,5 +1,5 @@
 """Null/power analysis of the train-minus-test global-affine residual share (aff_diff) on dense AE runs.  CPU only, <=8 threads.
-Usage: python ae_dense_null.py [--stage compute|report|all]
+Usage: python scripts/ae/ae_dense_null.py [--stage compute|report|all]
 Does NOT touch the outputs of ae_dense_leadlag.py (reads dense runs, writes analysis/null_series/*.npz, results_null.json, fig_null_*.png, RESULTS_null.md).
 Per snapshot t (velocity v = z(t+W)-z(t-W), W = 12 steps for ALL runs so every-2 and every-4 runs are comparable; the
 original leadlag uses W=3 snapshots = 6 steps for every-2 runs):

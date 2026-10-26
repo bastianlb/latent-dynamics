@@ -1,4 +1,4 @@
-"""Eigen-event detection, reproducibility checks and summaries for vfield_spectra outputs.   Usage: python vfield_spectra_events.py [--out DIR]
+"""Eigen-event detection, reproducibility checks and summaries for vfield_spectra outputs.   Usage: python -m latentdyn.vfield.spectra_events [--out DIR]
 Events (per sample-split series of the class-aggregated generator spectra; Lres = class-wise residual generator in the affine frame, Ltot = total class-wise generator):
   abscissa_cross : class-median spectral abscissa (max Re) changes sign persistently (>=6 smoothed intervals on both sides)
   nexp_shift / ncplx_shift : smoothed class-mean number of expanding directions / complex pairs shifts by >=1 between 8-interval windows

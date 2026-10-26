@@ -1,7 +1,7 @@
 """Null + power dense AE runs (CPU only). Same hyperparams as run_ae_dense.py.
  null : N=full (60000; dense every 4 to step 7000) and N=4000 (every 4 to step 9000), wd0, seeds 0-2
  power: N=1000 / N=250 wd0 seeds 3-5 (every 2; until 4000/2000; train_steps 20000 as in the original dense runs)
-Usage: python run_ae_dense_null.py [--workers 6] [--threads 2] [--dry]"""
+Usage: python scripts/ae/run_ae_dense_null.py [--workers 6] [--threads 2] [--dry]"""
 import argparse, os
 from latentdyn.launch import train_cmd, run_jobs
 ROOT = "/vol/bitbucket/lbastian/latent-dynamics/ae_dynamics/dense"
@@ -32,6 +32,6 @@ env = dict(os.environ, CUDA_VISIBLE_DEVICES="", OMP_NUM_THREADS=t, OPENBLAS_NUM_
 os.makedirs(f"{ROOT}/logs", exist_ok=True)
 J = [(N, "0", s) for N in (60000, 4000) for s in (0, 1, 2)] + [(N, "0", s) for N in (1000, 250) for s in (3, 4, 5)]
 rids = [rid(*j) for j in J]
-run_jobs([cmd(*j) for j in J], env=env, workers=a.workers, logs=[f"{ROOT}/logs/{r}.log" for r in rids],
+run_jobs([cmd(*j) for j in J], env=env, workers=a.workers, logs=[f"{ROOT}/logs/{r}.log" for r in rids], names=rids,
          skip=lambda i, c: os.path.exists(f"{ROOT}/runs/{rids[i]}/model_final.pt"), dry=a.dry)
 print("ALL DONE", flush=True)

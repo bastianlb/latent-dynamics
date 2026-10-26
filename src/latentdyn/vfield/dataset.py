@@ -1,5 +1,5 @@
 """Replicate the latent-dynamics analyses (partition, spectra, train-vs-test transfer/contraction/drag, mislabelled flip + memorisation crossover) on other datasets.
-Usage: python vfield_dataset.py run --dataset fm|cifar|mnist_ref --runs 'GLOB,...' --out ROOT [--stages traintest,spectra,partition,flip,null] [--proj none|pca16|pca32|logit10] [--device cpu]
+Usage: python -m latentdyn.vfield.dataset run --dataset fm|cifar|mnist_ref --runs 'GLOB,...' --out ROOT [--stages traintest,spectra,partition,flip,null] [--proj none|pca16|pca32|logit10] [--device cpu]
 Reuses vfield.py / vfield_decomp.py / vfield_spectra.py / vfield_traintest.py unchanged (except the optional `light` partition mode and a guarded final-head block) by
 monkey-patching vfield.load_run, so high-dimensional latents are first projected to a FIXED run-level linear frame:
   pca<k> : orthonormal top-k principal directions of the pooled, per-snapshot-normalised (centred, divided by RMS radius), test+train probe latents of the run (every 2nd snapshot);

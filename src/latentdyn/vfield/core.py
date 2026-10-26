@@ -1,8 +1,8 @@
 """Per-sample latent vector-field analysis (closure test) on the probe latent clouds. torch, batched over all snapshot intervals; GPU optional.
 
 Usage:
-  python vfield.py run --device cuda --runs 'mnist_probe_none_d16_s0_phase_*' [--probes test,train] [--limit N] [--shard i/n]
-  python vfield.py aggregate
+  python -m latentdyn.vfield.core run --device cuda --runs 'mnist_probe_none_d16_s0_phase_*' [--probes test,train] [--limit N] [--shard i/n]
+  python -m latentdyn.vfield.core aggregate
 Data: runs_v2/runs/<id>/latents/step_*.npz (test probe, 1000 x 16) and latents_train/ (train probe, N<=1000 or 1000; may carry noisy_labels); model_final.pt
 (only the FINAL probe head is stored; per-snapshot heads/logits are NOT available, so the logit frame (d) is not computed; the free-particle reference uses the
 final head and is only meaningful in the last intervals).

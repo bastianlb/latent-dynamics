@@ -1,5 +1,5 @@
 """Thin adapter: run the classifier linear-dynamical-system analysis (vfield_decomp partition + generator, vfield_spectra) on AE latent snapshots.
-Usage: python ae_vfield_decomp.py --runs 'mnist_ae_mlp_d16_*' [--probes test,train] [--modes lab,km] [--out DIR]
+Usage: python scripts/ae/ae_vfield_decomp.py --runs 'mnist_ae_mlp_d16_*' [--probes test,train] [--modes lab,km] [--out DIR]
 Modes: lab = true labels as "classes" (annotation only for the AE); km = label-free k-means(10) input grouping (50-d pixel PCA, as ae_analysis.py), applied to probe images.
 Per run/probe/mode npz: steps, part_names/part_mean/part_std (as vfield_decomp), gen (global generator, label-free, stored once per probe in mode 'lab'), spectra (vfield_spectra.process outputs), recon curves.
 CPU only, threads capped. Does not modify the classifier scripts; V.load_run is monkeypatched to feed the chosen grouping."""

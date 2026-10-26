@@ -1,6 +1,6 @@
 """Linear + nonlinear decomposition of the probe-latent motion:  z_{t+1,i} = A_t z_{t,i} + b_t + f_t(z_{t,i}, y_i) + eps.   torch (GPU optional).
 
-Usage: python vfield_decomp.py run --device cuda --runs 'GLOB,...' --probes test[,train] [--nsplit 5] [--shard i/n] [--out DIR]   |   python vfield_decomp_aggregate.py
+Usage: python -m latentdyn.vfield.decomp run --device cuda --runs 'GLOB,...' --probes test[,train] [--nsplit 5] [--shard i/n] [--out DIR]   |   python archive/aggregates/vfield_decomp_aggregate.py
 Fit on the TRAIN half, score on the held-out half (same 5 stratified splits as vfield.py). Displacement d_i = z_{t+1,i} - z_{t,i} (raw frame; A_t absorbs gauge).
 Variance partition (held-out, fraction of sum ||d||^2, uncentered so translation counts as affine):
   R1  global affine  | R2  + class-wise affine (ridge, LOO-GCV) | R3  + nonlinear f on the residual (sequential: kNN10 and RBF kernel ridge) | unexplained = 1 - R3

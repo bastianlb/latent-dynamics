@@ -1,12 +1,10 @@
 """Fig 8 of the dynamics report: AE vs classifier latent-field comparison (CPU only).
 (a) late R1 vs N (per-run band metric R1_b1000_up, mean +- sd over 3 seeds; same loaders as ae_lds_report.py)
-(b) late group-wise share (R2-R1)/(1-R1), labels vs k-means(10) groups, from summary.csv columns vf_te_{lab,km}_classaffine_gain_late
+(b) late raw group-wise increment R2-R1 (the CSV column is not divided by 1-R1), labels vs k-means(10) groups, from summary.csv columns vf_te_{lab,km}_classaffine_gain_late
 (c) final kNN agreement of test latents at full N for label groups vs input-cluster groups."""
-import os
-for v in ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"]: os.environ.setdefault(v, "8")
+from latentdyn._threads import cap_threads; cap_threads(8)
 import csv, numpy as np
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-import sys; sys.path.insert(0, "/homes/lbastian/latent-dynamics/src"); sys.path.insert(0, "/homes/lbastian/latent-dynamics/scripts")
 from latentdyn.ae import lds_load as L
 L.clf_gen = lambda rid, probe: None  # generator rows not needed here (avoids recomputing from latents)
 A = "/vol/bitbucket/lbastian/latent-dynamics/ae_dynamics/analysis"; OUT = "/vol/bitbucket/lbastian/latent-dynamics/dynamics_report/figures"
@@ -49,7 +47,7 @@ for di, ds in enumerate(("mnist", "fashion_mnist")):
                 b.errorbar(pos + dx + off, mm, yerr=ss, color=col, marker="o", ms=5, mfc=col if filled else "white", capsize=2, lw=1)
         ticks.append(pos); tl.append(NL[ni]); pos += 1
     pos += 0.8
-b.set_xticks(ticks); b.set_xticklabels(tl); b.set_xlabel("training-set size $N$"); b.set_ylabel("group-wise share of residual")
+b.set_xticks(ticks); b.set_xticklabels(tl); b.set_xlabel("training-set size $N$"); b.set_ylabel("late group-wise increment $R_2-R_1$")
 b.text(1.5, b.get_ylim()[1] * 0.98, "MNIST", ha="center", va="top", fontsize=8); b.text(6.3, b.get_ylim()[1] * 0.98, "FM", ha="center", va="top", fontsize=8)
 b.grid(alpha=0.3); b.set_title("(b) Class-wise increment", fontsize=9)
 from matplotlib.lines import Line2D
@@ -77,7 +75,7 @@ for ds, rr in SC.items():
                 c.text(x, 0.02, "n/a", rotation=90, ha="center", va="bottom", fontsize=6, color=CL)
         x += 2 * w + 0.06
     dsx.append(((x0 + x - 0.06 - 2 * w) / 2 + w * 0.0, ds)); x += 0.5
-c.set_xticks([d[0] + w * 0.0 for d in dsx]); c.set_xticklabels([d[1] for d in dsx]); c.set_ylabel("kNN agreement (test latents)"); c.set_ylim(0, 1.05); c.grid(alpha=0.3, axis="y")
+c.set_xticks([d[0] + w * 0.0 for d in dsx]); c.set_xticklabels([d[1] for d in dsx]); c.set_ylabel("kNN agreement (test latents)"); c.set_ylim(0, 1.3); c.grid(alpha=0.3, axis="y")
 c.set_title("(c) Final class structure, full $N$", fontsize=9)
 h, l = c.get_legend_handles_labels()
 h += [plt.Rectangle((0, 0), 1, 1, fc="white", ec="k"), plt.Rectangle((0, 0), 1, 1, fc="white", ec="k", hatch="////")]; l += ["label groups", "input clusters"]

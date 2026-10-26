@@ -1,5 +1,5 @@
 """Re-run AE grid configs (identical flags/seeds as run_ae_dense.py) with model+Adam checkpoints at chosen epochs. CPU only.
-Usage: python run_ae_ntk_ckpt.py [--workers 4] [--threads 2] [--dry]"""
+Usage: python scripts/ae/run_ae_ntk_ckpt.py [--workers 4] [--threads 2] [--dry]"""
 import argparse, os
 from latentdyn.launch import train_cmd, run_jobs
 ROOT = "/vol/bitbucket/lbastian/latent-dynamics/ae_dynamics/ntk"
@@ -34,6 +34,6 @@ for s in (0, 1, 2):
     J += [("linear", N, "0", s) for N in (250, 1000)]
     J += [("mlp", "full", "0", s)]
 rids = [rid(*j) for j in J]
-run_jobs([cmd(*j) for j in J], env=env, workers=a.workers, logs=[f"{ROOT}/logs/{r}.log" for r in rids],
+run_jobs([cmd(*j) for j in J], env=env, workers=a.workers, logs=[f"{ROOT}/logs/{r}.log" for r in rids], names=rids,
          skip=lambda i, c: os.path.exists(f"{ROOT}/runs/{rids[i]}/model_final.pt"), dry=a.dry)
 print("ALL DONE", flush=True)

@@ -1,6 +1,6 @@
 """Bounded-concurrency CPU queue for the AE dynamics grid (see ae_dynamics/README.md).
-Usage: python run_ae_grid.py [--workers 7] [--threads 3] [--dry]
-A run is done iff <root>/runs/<run_id>/model_final.pt exists (train.py writes it last); done runs are skipped.
+Usage: python scripts/ae/run_ae_grid.py [--workers 7] [--threads 3] [--dry]
+A run is done iff <root>/runs/<run_id>/model_final.pt exists (latentdyn.train writes it last); done runs are skipped.
 """
 import argparse, os
 from latentdyn.launch import train_cmd, run_jobs
@@ -75,7 +75,7 @@ def main():
     print(f"{len(J)} jobs", flush=True)
 
     rids = [run_id(*j) for j in J]
-    run_jobs([cmd(*j) for j in J], env=env, workers=a.workers, logs=[f"{ROOT}/logs/{r}.log" for r in rids],
+    run_jobs([cmd(*j) for j in J], env=env, workers=a.workers, logs=[f"{ROOT}/logs/{r}.log" for r in rids], names=rids,
              skip=lambda i, c: os.path.exists(f"{ROOT}/runs/{rids[i]}/model_final.pt"), dry=a.dry)
     print("ALL DONE", flush=True)
 

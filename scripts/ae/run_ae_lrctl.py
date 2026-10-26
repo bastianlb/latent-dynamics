@@ -14,6 +14,6 @@ env = dict(os.environ, CUDA_VISIBLE_DEVICES="", OMP_NUM_THREADS="2", OPENBLAS_NU
 os.makedirs(f"{ROOT}/logs", exist_ok=True)
 J = [(N, t, s) for s in (0, 1, 2) for N in (250, 1000) for t in CONDS]
 rids = [rid(*j) for j in J]
-run_jobs([cmd(*j) for j in J], env=env, workers=nw, logs=[f"{ROOT}/logs/{r}.log" for r in rids],
+run_jobs([cmd(*j) for j in J], env=env, workers=nw, logs=[f"{ROOT}/logs/{r}.log" for r in rids], names=rids,
          skip=lambda i, c: os.path.exists(f"{ROOT}/runs/{rids[i]}/model_final.pt"))
 print("ALL DONE", flush=True)

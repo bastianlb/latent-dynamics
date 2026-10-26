@@ -1,4 +1,4 @@
-"""Aggregate AE (and classifier) linear-dynamical-system results -> tables (stdout / md fragments) + figures in ae_dynamics/analysis/. Usage: python ae_lds_report.py"""
+"""Aggregate AE (and classifier) linear-dynamical-system results -> tables (stdout / md fragments) + figures in ae_dynamics/analysis/. Usage: python scripts/ae/ae_lds_report.py"""
 import os
 from latentdyn._threads import cap_threads
 cap_threads(2)

@@ -1,5 +1,5 @@
 """Spectra of the class-wise affine generators of the probe-latent motion (step 1 of 3). torch fits (GPU optional), numpy eigen-analysis (CPU, one process).
-Usage: python vfield_spectra.py run --device cuda --runs 'GLOB,...' --probes test [--label_modes given] [--out DIR] [--nsplit 5] [--tmax N]
+Usage: python -m latentdyn.vfield.spectra run --device cuda --runs 'GLOB,...' --probes test [--label_modes given] [--out DIR] [--nsplit 5] [--tmax N]
 Model per interval k (forward): z' = z + [global affine displacement] + class-wise affine residual (ridge, LOO-GCV, fit on the TRAIN half only; 5 stratified 50/50 splits).
   Rres_y : class-wise residual linear map (affine frame = global affine removed)           -> generator Lres_y = Rres_y / dstep   (displacement matrix, so logm(I+R)/dstep ~ R/dstep)
   Atot_y : A_glob + Rres_y  (total class-wise linear map)                                  -> Ltot_y = logm(Atot_y)/dstep, fallback (Atot_y - I)/dstep

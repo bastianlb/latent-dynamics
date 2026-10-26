@@ -1,6 +1,6 @@
 """Memorization-in-latent-space analysis for AE (and matched classifier probe) runs.  CPU only, <=8 threads.
 
-Usage: python ae_memorization.py [--runs GLOB[,GLOB]] [--out DIR]
+Usage: python -m latentdyn.ae.memorization [--runs GLOB[,GLOB]] [--out DIR]
 Outputs OUT (default /vol/bitbucket/lbastian/latent-dynamics/ae_dynamics/analysis/memorization): <run_id>.npz per run + results.json (aggregates)
 
 Per run, per snapshot t (train probe = the n_tr training points; test probe = 1000 test points):

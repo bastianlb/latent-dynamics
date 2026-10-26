@@ -1,5 +1,5 @@
 """Train-vs-test tangent-kernel contrast (kernel blocks on a mixed set, drive decomposition, label-noise coupling).
-Reuses ntk_lib / ntk_pair / run_ntk. usage: run_tt.py <run_id>"""
+Reuses ntk_lib / ntk_pair / run_ntk. usage: python -m latentdyn.ntk.tt <run_id>"""
 import os, sys, json, time
 import numpy as np, torch, torch.nn.functional as F
 from latentdyn.ntk import lib as L, pair as Pm, run as R

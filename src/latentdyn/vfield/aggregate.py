@@ -1,4 +1,4 @@
-"""Aggregate vfield per-run npz into summary csv/figures. Usage: python vfield_aggregate.py [--out DIR]"""
+"""Aggregate vfield per-run npz into summary csv/figures. Usage: python -m latentdyn.vfield.aggregate [--out DIR]"""
 import os, sys
 from latentdyn._threads import cap_threads
 cap_threads(8)

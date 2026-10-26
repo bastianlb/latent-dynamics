@@ -1,7 +1,7 @@
 """Train-probe vs test-probe latent dynamics: field transfer, contraction, label-noise drag, dense per-step lags.   torch (GPU optional), numpy for eigenvalues.
 Usage:
-  python vfield_traintest.py run   --device cuda --runs 'GLOB,...' [--nsplit 5] [--out DIR] [--force]
-  python vfield_traintest.py dense --device cuda --dense_runs dl_adam_n4000_wd0,dl_adam_n4000_ln0.2 [--out DIR]
+  python -m latentdyn.vfield.traintest run   --device cuda --runs 'GLOB,...' [--nsplit 5] [--out DIR] [--force]
+  python -m latentdyn.vfield.traintest dense --device cuda --dense_runs dl_adam_n4000_wd0,dl_adam_n4000_ln0.2 [--out DIR]
 Setup per interval k (snapshots t_k -> t_{k+1}), displacement d_i = z_{t+1,i} - z_{t,i}, forward global affine A_t z + b_t removed (affine frame), class-wise affine ridge on the residual
 (vfield.ridge_fit, LOO-GCV).  Sets: TEST probe (1000, true labels) and TRAIN probe (min(N,1000) points, given labels = the labels trained on).  5 stratified 50/50 splits per set.
 Transfer: fit on the fit-half of the source set, score uncentered R2 (fraction of sum ||d||^2) on the held-out half of the target set.

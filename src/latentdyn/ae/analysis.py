@@ -1,7 +1,7 @@
 """Autoencoder (AE) latent-dynamics analysis, per run.   CPU only (torch + numpy, threads capped at 8).
 
 Usage:
-  python ae_analysis.py run --runs 'GLOB[,GLOB...]' [--out DIR] [--nsplit 3] [--force] [--no_vfield] [--limit N] [--shard i/n]
+  python -m latentdyn.ae.analysis run --runs 'GLOB[,GLOB...]' [--out DIR] [--nsplit 3] [--force] [--no_vfield] [--limit N] [--shard i/n]
   (GLOB searched under ae_dynamics/runs, runs, runs_v2/runs, artifacts root, or absolute; runs without model_final.pt are skipped)
 Outputs (per run):  OUT/runs/<run_id>.npz (time series) + OUT/runs/<run_id>.json (scalar summary).  OUT default = /vol/bitbucket/lbastian/latent-dynamics/ae_dynamics/analysis
 

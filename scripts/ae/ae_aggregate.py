@@ -1,5 +1,5 @@
 """Cross-run tables and figures for ae_analysis.py outputs.   CPU only.
-Usage: python ae_aggregate.py [--analysis DIR] [--runs GLOB] [--out DIR] [--dataset mnist] [--d 16]   (safe to re-run on partial data; configs with no cached runs are skipped)
+Usage: python scripts/ae/ae_aggregate.py [--analysis DIR] [--runs GLOB] [--out DIR] [--dataset mnist] [--d 16]   (safe to re-run on partial data; configs with no cached runs are skipped)
   also (config = family/d/N/wd, mean +- sd over seeds): summary_by_config.csv + summary_by_config.md, figures/generalization_vs_N.png, gen_timeseries.png, probe_vs_ae.png, d_sweep.png, staging_pc_rise.png
   reads DIR/runs/<id>.{json,npz}; writes OUT/summary.csv (one row per run, all json scalars) and figures in OUT/figures/:
   ts_geometry.png (label vs label-free structure vs time), ts_generalization.png (recon gap, train/test geometry), ts_pca.png (PCA alignment + per-PC staging),

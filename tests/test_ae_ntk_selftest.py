@@ -40,4 +40,5 @@ def test_ae_ntk_selftest():
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], int(sys.argv[2]))
+    if len(sys.argv) > 2: main(sys.argv[1], int(sys.argv[2]))
+    else: test_ae_ntk_selftest()

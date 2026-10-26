@@ -11,6 +11,13 @@ jobs, sonnet for non-trivial implementation). Spawn agents with an explicit
 `model: sonnet` / `model: haiku` override. Only fall back to doing work inline
 when delegation is impractical (e.g. a quick coordinator-level shell check).
 
+## Code layout
+
+- New reusable code goes into `src/latentdyn/` (installed editable: `pip install -e .`).
+- Entry points / thin wrappers go into `scripts/` (`scripts/ae/` for the AE study).
+- `archive/` is frozen one-off analysis code: do not extend it.
+- Equivalence/self tests live in `tests/`; run everything with `bash tests/run_all.sh`.
+
 ## GPU usage policy (shared machine)
 
 This is a **shared machine** with 8× NVIDIA L40S GPUs (46 GB each). Other people
@@ -48,13 +55,13 @@ wait, rather than squeezing onto an occupied GPU.
 Pick idle indices and pin them. Example for a single idle GPU (index 3):
 
 ```bash
-CUDA_VISIBLE_DEVICES=3 python train.py
+CUDA_VISIBLE_DEVICES=3 python -m latentdyn.train
 ```
 
 Two idle GPUs (indices 0 and 3) — the maximum allowed:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,3 python train.py
+CUDA_VISIBLE_DEVICES=0,3 python -m latentdyn.train
 ```
 
 Do not use more than three indices in `CUDA_VISIBLE_DEVICES`.
@@ -109,10 +116,10 @@ script so they stay overridable):
 
 ```bash
 OMP_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 MKL_NUM_THREADS=8 \
-NUMEXPR_NUM_THREADS=8 VECLIB_MAXIMUM_THREADS=8 python analyze.py ...
+NUMEXPR_NUM_THREADS=8 VECLIB_MAXIMUM_THREADS=8 python -m latentdyn.pipeline.analyze ...
 ```
 
-`analyze.py` / `plot.py` already apply this cap internally. For any new
+`latentdyn.pipeline.analyze` / `latentdyn.pipeline.plot` already apply this cap internally (via `latentdyn._threads.cap_threads`). For any new
 CPU-bound script, do the same (≤8 threads is plenty here), and sanity-check
 `uptime` / `/proc/loadavg` after launching.
 
