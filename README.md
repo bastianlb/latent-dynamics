@@ -47,6 +47,11 @@ python scripts/ae/run_ae_grid.py --dry                         # AE grid launche
 python scripts/ae/ae_lds_report.py                             # AE reports (ae_aggregate, ae_ntk_analyze, ...)
 ```
 
+## Results
+
+- `results/SUMMARY.md`: experiment blocks, key findings with sources, where outputs live.
+- `results/runs.csv` (in progress): per-run hyperparameters, final metrics and reproduce commands.
+
 ## Tests
 
 ```bash
